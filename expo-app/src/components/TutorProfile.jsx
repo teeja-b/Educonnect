@@ -871,7 +871,7 @@ const TutorProfile = ({ onClose, visible = true, token: tokenProp }) => {
 const styles = StyleSheet.create({
   container:    { flex: 1, backgroundColor: '#f8fafc' },
   flex:         { flex: 1 },
-  scrollContent:{ padding: 14, paddingBottom: 32 },
+  scrollContent:{ width: '100%', maxWidth: 760, alignSelf: 'center', padding: 14, paddingBottom: 32 },
 
   // Loading
   loadingScreen:{ flex: 1, backgroundColor: '#f8fafc', alignItems: 'center', justifyContent: 'center' },

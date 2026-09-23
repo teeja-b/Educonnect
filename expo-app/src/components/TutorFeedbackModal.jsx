@@ -267,7 +267,7 @@ export const TutorMatchCard = ({ match, onFeedback, showPerformance = true }) =>
 
 const styles = StyleSheet.create({
   overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 16 },
-  card: { backgroundColor: '#fff', borderRadius: 16, padding: 20, maxHeight: '90%' },
+  card: { width: '100%', maxWidth: 520, alignSelf: 'center', backgroundColor: '#fff', borderRadius: 16, padding: 20, maxHeight: '90%' },
   title: { fontSize: 22, fontWeight: 'bold', color: '#111827', marginBottom: 4 },
   sub: { fontSize: 14, color: '#6b7280', marginBottom: 16 },
   tutorName: { color: '#2563eb', fontWeight: '600' },

@@ -725,7 +725,7 @@ const AITutorMatcher = ({ studentProfile, onSelectTutor, onMessageTutor }) => {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { padding: 16, paddingBottom: 32 },
+  container: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: 16, paddingBottom: 32 },
 
   header: { backgroundColor: '#7c3aed', borderRadius: 12, padding: 20, marginBottom: 16 },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },

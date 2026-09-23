@@ -558,7 +558,7 @@ const TutorCourseManager = ({ onClose }) => {
 
 const s = StyleSheet.create({
   root:  { flex: 1, backgroundColor: '#f9fafb' },
-  body:  { padding: 16, paddingBottom: 40 },
+  body:  { width: '100%', maxWidth: 760, alignSelf: 'center', padding: 16, paddingBottom: 40 },
 
   // header
   header:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#2563eb', paddingHorizontal: 16, paddingVertical: 14 },

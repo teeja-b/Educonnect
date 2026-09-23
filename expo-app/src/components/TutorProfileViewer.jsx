@@ -329,7 +329,7 @@ const styles = StyleSheet.create({
   sessionsText: { color: 'rgba(255,255,255,0.7)', fontSize: 12 },
   closeBtn: { position: 'absolute', top: 16, right: 14, padding: 6 },
 
-  scrollContent: { padding: 12, paddingBottom: 16 },
+  scrollContent: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: 12, paddingBottom: 16 },
 
   // Stats
   statsGrid: { flexDirection: 'row', gap: 8, marginBottom: 12 },

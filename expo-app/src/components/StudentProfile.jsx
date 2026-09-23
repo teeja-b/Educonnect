@@ -452,7 +452,7 @@ const styles = StyleSheet.create({
   headerEmail: { color: '#BFDBFE', fontSize: 12, marginTop: 2 },
   closeBtn: { padding: 6 },
 
-  scrollContent: { padding: 14, paddingBottom: 24 },
+  scrollContent: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: 14, paddingBottom: 24 },
 
   section: { backgroundColor: '#fff', borderRadius: 14, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#F3F4F6' },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 },

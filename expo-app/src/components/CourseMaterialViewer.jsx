@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   progressBg: { height: 4, backgroundColor: 'rgba(255,255,255,0.3)', backgroundColor: '#DDD6FE' },
   progressFill: { height: 4, backgroundColor: '#7C3AED' },
 
-  scrollContent: { padding: 12, paddingBottom: 32 },
+  scrollContent: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: 12, paddingBottom: 32 },
 
   // Description
   descCard: { backgroundColor: '#EDE9FE', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#DDD6FE', marginBottom: 14 },

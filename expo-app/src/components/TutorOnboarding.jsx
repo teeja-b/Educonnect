@@ -502,7 +502,7 @@ fieldHint: { fontSize: 12, color: '#9CA3AF', marginTop: 2, marginBottom: 4 },
   progressSegmentActive: { backgroundColor: '#fff' },
   stepCounter: { color: '#BBF7D0', fontSize: 12 },
 
-  scrollContent: { padding: 16, paddingBottom: 24 },
+  scrollContent: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: 16, paddingBottom: 24 },
   stepContent: { gap: 16 },
   stepHeading: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 4 },
   stepTitle: { fontSize: 20, fontWeight: '700', color: '#1F2937' },
