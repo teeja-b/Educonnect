@@ -1,6 +1,7 @@
 # Build the static web version
 FROM node:20-alpine AS build
 WORKDIR /app
+RUN npm install -g npm@11.12.1
 COPY expo-app/package*.json ./
 RUN npm ci
 COPY expo-app/ .
