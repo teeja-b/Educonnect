@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="feature-react-native-get-random-values">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Educonnect/Educonnect/expo-app/node_modules/react-native-get-random-values/android/build/intermediates/merged_java_res/release/mergeReleaseJavaResource/feature-react-native-get-random-values.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="feature-expo-json-utils">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Educonnect/Educonnect/expo-app/node_modules/expo-json-utils/android/build/intermediates/merged_java_res/release/mergeReleaseJavaResource/feature-expo-json-utils.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

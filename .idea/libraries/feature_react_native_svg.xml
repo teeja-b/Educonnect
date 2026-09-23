@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="feature-react-native-svg">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Educonnect/Educonnect/expo-app/node_modules/react-native-svg/android/build/intermediates/merged_java_res/release/mergeReleaseJavaResource/feature-react-native-svg.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

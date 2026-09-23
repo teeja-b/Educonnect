@@ -1,0 +1,8 @@
+{
+  "android": {
+    "package": "com.anonymous.expoapp"
+  },
+  "plugins": [
+    "expo-web-browser"
+  ]
+}

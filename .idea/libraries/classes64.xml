@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="classes64">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Educonnect/Educonnect/expo-app/node_modules/expo-dev-client/android/build/intermediates/runtime_library_classes_jar/release/bundleLibRuntimeToJarRelease/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

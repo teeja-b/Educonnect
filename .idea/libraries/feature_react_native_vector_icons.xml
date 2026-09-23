@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="feature-react-native-vector-icons">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Educonnect/Educonnect/expo-app/node_modules/react-native-vector-icons/android/build/intermediates/merged_java_res/release/mergeReleaseJavaResource/feature-react-native-vector-icons.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="feature-react-native-webrtc">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Educonnect/Educonnect/expo-app/node_modules/react-native-webrtc/android/build/intermediates/merged_java_res/release/mergeReleaseJavaResource/feature-react-native-webrtc.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

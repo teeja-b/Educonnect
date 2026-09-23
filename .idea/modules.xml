@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/Educonnect.iml" filepath="$PROJECT_DIR$/.idea/Educonnect.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Educonnect/Educonnect/expo-app/android/app/src/app.iml" filepath="$PROJECT_DIR$/Educonnect/Educonnect/expo-app/android/app/src/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Educonnect/Educonnect/expo-app/android/app/build/generated/autolinking/autolinking.iml" filepath="$PROJECT_DIR$/Educonnect/Educonnect/expo-app/android/app/build/generated/autolinking/autolinking.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Educonnect/Educonnect/expo-app/android/app/build/generated/source/generated.iml" filepath="$PROJECT_DIR$/Educonnect/Educonnect/expo-app/android/app/build/generated/source/generated.iml" />
+    </modules>
+  </component>
+</project>

@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="assets2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Educonnect/Educonnect/expo-app/android/app/build/intermediates/compressed_assets/debug/compressDebugAssets/out/assets/PLACEHOLDER.jar!/" />
+      <root url="jar://$PROJECT_DIR$/Educonnect/Educonnect/expo-app/android/app/build/intermediates/compressed_assets/debug/compressDebugAssets/out/assets/app.config.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
