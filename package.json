@@ -11,6 +11,9 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "expo": "^57.0.17"
+    "@expo/metro-runtime": "~57.0.16",
+    "expo": "^57.0.17",
+    "react-dom": "19.2.3",
+    "react-native-web": "^0.21.2"
   }
 }
