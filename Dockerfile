@@ -1,9 +1,9 @@
 # Build the static web version
 FROM node:20-alpine AS build
 WORKDIR /app
-COPY package*.json ./
+COPY expo-app/package*.json ./
 RUN npm ci
-COPY . .
+COPY expo-app/ .
 RUN npx expo export --platform web
 
 # Serve it on Cloud Run's port
