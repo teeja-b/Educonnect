@@ -90,13 +90,13 @@ const StudentSurvey = ({ onComplete, onClose }) => {
     const Step1 = () => (
         <ScrollView>
             <View style={styles.stepHeader}>
-                <Brain size={36} color="#7c3aed" />
+                <Brain size={36} color="#2F5BEA" />
                 <Text style={styles.stepTitle}>Rate Your Skills</Text>
                 <Text style={styles.stepSub}>Help us understand your current abilities</Text>
             </View>
-            <Slider label="Mathematics" field="mathScore" value={surveyData.mathScore} color="#2563eb" />
-            <Slider label="Science" field="scienceScore" value={surveyData.scienceScore} color="#16a34a" />
-            <Slider label="Language Arts" field="languageScore" value={surveyData.languageScore} color="#7c3aed" />
+            <Slider label="Mathematics" field="mathScore" value={surveyData.mathScore} color="#2F5BEA" />
+            <Slider label="Science" field="scienceScore" value={surveyData.scienceScore} color="#059669" />
+            <Slider label="Language Arts" field="languageScore" value={surveyData.languageScore} color="#2F5BEA" />
             <Slider label="Technology" field="techScore" value={surveyData.techScore} color="#ea580c" />
             <Slider label="Motivation Level" field="motivationLevel" value={surveyData.motivationLevel} color="#ca8a04" />
         </ScrollView>
@@ -106,7 +106,7 @@ const StudentSurvey = ({ onComplete, onClose }) => {
     const Step2 = () => (
         <ScrollView>
             <View style={styles.stepHeader}>
-                <BookOpen size={36} color="#2563eb" />
+                <BookOpen size={36} color="#2F5BEA" />
                 <Text style={styles.stepTitle}>Learning Preferences</Text>
                 <Text style={styles.stepSub}>Tell us how you learn best</Text>
             </View>
@@ -136,7 +136,7 @@ const StudentSurvey = ({ onComplete, onClose }) => {
                         style={[styles.chip, surveyData.skillLevel === l && styles.chipActivePurple]}
                         onPress={() => update('skillLevel', l)}
                     >
-                        <Text style={[styles.chipText, surveyData.skillLevel === l && { color: '#7c3aed' }]}>
+                        <Text style={[styles.chipText, surveyData.skillLevel === l && { color: '#2F5BEA' }]}>
                             {l.charAt(0).toUpperCase() + l.slice(1)}
                         </Text>
                     </TouchableOpacity>
@@ -151,7 +151,7 @@ const StudentSurvey = ({ onComplete, onClose }) => {
                         style={[styles.chip, surveyData.availableTime === t && styles.chipActiveGreen]}
                         onPress={() => update('availableTime', t)}
                     >
-                        <Text style={[styles.chipText, surveyData.availableTime === t && { color: '#16a34a' }]}>
+                        <Text style={[styles.chipText, surveyData.availableTime === t && { color: '#059669' }]}>
                             {t.charAt(0).toUpperCase() + t.slice(1)}
                         </Text>
                     </TouchableOpacity>
@@ -178,8 +178,8 @@ const StudentSurvey = ({ onComplete, onClose }) => {
                                 style={[styles.tagChip, active && styles.tagChipActive]}
                                 onPress={() => toggleArr('preferredSubjects', s)}
                             >
-                                {active && <CheckCircle size={12} color="#2563eb" style={{ marginRight: 4 }} />}
-                                <Text style={[styles.tagText, active && { color: '#2563eb' }]}>{s}</Text>
+                                {active && <CheckCircle size={12} color="#2F5BEA" style={{ marginRight: 4 }} />}
+                                <Text style={[styles.tagText, active && { color: '#2F5BEA' }]}>{s}</Text>
                             </TouchableOpacity>
                         );
                     })}
@@ -195,8 +195,8 @@ const StudentSurvey = ({ onComplete, onClose }) => {
                             style={[styles.tagChip, active && styles.tagChipActiveGreen]}
                             onPress={() => toggleArr('preferredLanguages', l)}
                         >
-                            {active && <CheckCircle size={12} color="#16a34a" style={{ marginRight: 4 }} />}
-                            <Text style={[styles.tagText, active && { color: '#16a34a' }]}>{l}</Text>
+                            {active && <CheckCircle size={12} color="#059669" style={{ marginRight: 4 }} />}
+                            <Text style={[styles.tagText, active && { color: '#059669' }]}>{l}</Text>
                         </TouchableOpacity>
                     );
                 })}
@@ -237,8 +237,8 @@ const StudentSurvey = ({ onComplete, onClose }) => {
                             style={[styles.tagChip, active && styles.tagChipActive]}
                             onPress={() => toggleArr('selectedGoals', goal)}
                         >
-                            {active && <CheckCircle size={12} color="#2563eb" style={{ marginRight: 4 }} />}
-                            <Text style={[styles.tagText, active && { color: '#2563eb' }]}>{goal}</Text>
+                            {active && <CheckCircle size={12} color="#2F5BEA" style={{ marginRight: 4 }} />}
+                            <Text style={[styles.tagText, active && { color: '#2F5BEA' }]}>{goal}</Text>
                         </TouchableOpacity>
                     );
                 })}
@@ -273,7 +273,7 @@ const StudentSurvey = ({ onComplete, onClose }) => {
                     >
                         <Text style={[
                             styles.chipText,
-                            surveyData.tutorGenderPreference === opt.value && { color: '#2563eb' },
+                            surveyData.tutorGenderPreference === opt.value && { color: '#2F5BEA' },
                         ]}>
                             {opt.label}
                         </Text>
@@ -367,14 +367,14 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20,
         maxHeight: '92%', flexShrink: 1,
     },
-    chipActiveBlue: { borderColor: '#2563eb', backgroundColor: '#eff6ff' },
-    sheetHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
+    chipActiveBlue: { borderColor: '#2F5BEA', backgroundColor: '#E8EEFD' },
+    sheetHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#E6EAF2' },
     sheetTitle: { fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 10 },
     closeBtn: { position: 'absolute', top: 16, right: 16 },
     closeBtnText: { fontSize: 16, color: '#6b7280' },
     progressRow: { flexDirection: 'row', gap: 6, marginBottom: 6 },
-    progressBar: { flex: 1, height: 6, borderRadius: 3, backgroundColor: '#e5e7eb' },
-    progressBarActive: { backgroundColor: '#2563eb' },
+    progressBar: { flex: 1, height: 6, borderRadius: 3, backgroundColor: '#E6EAF2' },
+    progressBarActive: { backgroundColor: '#2F5BEA' },
     stepCount: { fontSize: 12, color: '#9ca3af' },
     sheetContent: { flexShrink: 1, maxHeight: 440, padding: 16 },
     stepHeader: { alignItems: 'center', marginBottom: 16 },
@@ -384,59 +384,59 @@ const styles = StyleSheet.create({
     sliderLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
     sliderLabel: { fontSize: 13, fontWeight: '600', color: '#374151' },
     sliderValue: { fontSize: 15, fontWeight: 'bold' },
-    sliderTrack: { height: 6, backgroundColor: '#e5e7eb', borderRadius: 3, marginBottom: 8 },
+    sliderTrack: { height: 6, backgroundColor: '#E6EAF2', borderRadius: 3, marginBottom: 8 },
     sliderFill: { height: 6, borderRadius: 3 },
     sliderBtnRow: { flexDirection: 'row', gap: 4 },
-    sliderDot: { flex: 1, height: 16, borderRadius: 8, backgroundColor: '#e5e7eb' },
+    sliderDot: { flex: 1, height: 16, borderRadius: 8, backgroundColor: '#E6EAF2' },
     sectionLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8 },
     optionCard: {
-        borderWidth: 2, borderColor: '#e5e7eb', borderRadius: 10,
+        borderWidth: 2, borderColor: '#E6EAF2', borderRadius: 12,
         padding: 12, marginBottom: 8,
     },
-    optionCardActive: { borderColor: '#2563eb', backgroundColor: '#eff6ff' },
+    optionCardActive: { borderColor: '#2F5BEA', backgroundColor: '#E8EEFD' },
     optionTitle: { fontSize: 14, fontWeight: '600', color: '#374151', textTransform: 'capitalize' },
-    optionTitleActive: { color: '#2563eb' },
+    optionTitleActive: { color: '#2F5BEA' },
     optionDesc: { fontSize: 12, color: '#6b7280', marginTop: 2 },
     chipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-    chip: { borderWidth: 2, borderColor: '#e5e7eb', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 8 },
-    chipActivePurple: { borderColor: '#7c3aed', backgroundColor: '#f5f3ff' },
-    chipActiveGreen: { borderColor: '#16a34a', backgroundColor: '#f0fdf4' },
+    chip: { borderWidth: 2, borderColor: '#E6EAF2', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 },
+    chipActivePurple: { borderColor: '#2F5BEA', backgroundColor: '#E8EEFD' },
+    chipActiveGreen: { borderColor: '#059669', backgroundColor: '#E6F7EF' },
     chipText: { fontSize: 13, fontWeight: '500', color: '#374151', textTransform: 'capitalize' },
     tagGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
     tagChip: {
         flexDirection: 'row', alignItems: 'center',
-        borderWidth: 2, borderColor: '#e5e7eb', borderRadius: 8,
+        borderWidth: 2, borderColor: '#E6EAF2', borderRadius: 12,
         paddingHorizontal: 10, paddingVertical: 6,
     },
-    tagChipActive: { borderColor: '#2563eb', backgroundColor: '#eff6ff' },
-    tagChipActiveGreen: { borderColor: '#16a34a', backgroundColor: '#f0fdf4' },
+    tagChipActive: { borderColor: '#2F5BEA', backgroundColor: '#E8EEFD' },
+    tagChipActiveGreen: { borderColor: '#059669', backgroundColor: '#E6F7EF' },
     tagText: { fontSize: 12, color: '#374151' },
     textarea: {
-        borderWidth: 2, borderColor: '#e5e7eb', borderRadius: 10,
+        borderWidth: 2, borderColor: '#E6EAF2', borderRadius: 12,
         padding: 12, fontSize: 13, color: '#111827', minHeight: 120,
         textAlignVertical: 'top', marginBottom: 12,
     },
-    summaryBox: { backgroundColor: '#eff6ff', borderRadius: 10, padding: 14 },
-    summaryTitle: { fontSize: 14, fontWeight: '600', color: '#1e40af', marginBottom: 6 },
-    summaryItem: { fontSize: 12, color: '#1d4ed8', marginBottom: 2 },
+    summaryBox: { backgroundColor: '#E8EEFD', borderRadius: 12, padding: 14 },
+    summaryTitle: { fontSize: 14, fontWeight: '600', color: '#1E45C8', marginBottom: 6 },
+    summaryItem: { fontSize: 12, color: '#1E45C8', marginBottom: 2 },
     footer: {
         flexDirection: 'row', justifyContent: 'flex-end', gap: 10,
         paddingHorizontal: 16, paddingVertical: 12,
-        borderTopWidth: 1, borderTopColor: '#e5e7eb',
+        borderTopWidth: 1, borderTopColor: '#E6EAF2',
     },
     backBtn: {
         flexDirection: 'row', alignItems: 'center', gap: 6,
-        backgroundColor: '#f3f4f6', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 12,
+        backgroundColor: '#F3F5FA', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
     },
     backBtnText: { fontSize: 13, fontWeight: '500', color: '#374151' },
     nextBtn: {
         flexDirection: 'row', alignItems: 'center', gap: 6,
-        backgroundColor: '#2563eb', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 12,
+        backgroundColor: '#2F5BEA', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
     },
     nextBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
     submitBtn: {
         flexDirection: 'row', alignItems: 'center', gap: 6,
-        backgroundColor: '#16a34a', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 12,
+        backgroundColor: '#059669', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
     },
     submitBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
 });

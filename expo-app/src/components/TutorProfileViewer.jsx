@@ -58,7 +58,7 @@ const TutorProfileViewer = ({
     const count = Math.round(rating * 2) / 2;
     return Array.from({ length: 5 }).map((_, i) => {
       const filled = i < Math.floor(count);
-      return <Icon key={i} name="star" size={16} color={filled ? '#F59E0B' : '#D1D5DB'} style={filled ? { color: '#F59E0B' } : {}} />;
+      return <Icon key={i} name="star" size={16} color={filled ? '#F59E0B' : '#D5DCEA'} style={filled ? { color: '#F59E0B' } : {}} />;
     });
   };
 
@@ -90,7 +90,7 @@ const TutorProfileViewer = ({
     return (
       <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
         <SafeAreaView style={styles.centered}>
-          <ActivityIndicator size="large" color="#2563EB" />
+          <ActivityIndicator size="large" color="#2F5BEA" />
           <Text style={styles.loadingText}>Loading tutor profile…</Text>
         </SafeAreaView>
       </Modal>
@@ -154,14 +154,14 @@ const TutorProfileViewer = ({
         <ScrollView contentContainerStyle={styles.scrollContent}>
           {/* Quick Stats */}
           <View style={styles.statsGrid}>
-            <View style={[styles.statCard, { backgroundColor: '#EFF6FF' }]}>
-              <Icon name="dollar-sign" size={20} color="#2563EB" />
-              <Text style={[styles.statValue, { color: '#2563EB' }]}>${tutor.hourly_rate || 0}</Text>
+            <View style={[styles.statCard, { backgroundColor: '#E8EEFD' }]}>
+              <Icon name="dollar-sign" size={20} color="#2F5BEA" />
+              <Text style={[styles.statValue, { color: '#2F5BEA' }]}>${tutor.hourly_rate || 0}</Text>
               <Text style={styles.statLabel}>per hour</Text>
             </View>
-            <View style={[styles.statCard, { backgroundColor: '#F0FDF4' }]}>
-              <Icon name="briefcase" size={20} color="#16A34A" />
-              <Text style={[styles.statValue, { color: '#16A34A' }]}>{tutor.years_experience || '0'}</Text>
+            <View style={[styles.statCard, { backgroundColor: '#E6F7EF' }]}>
+              <Icon name="briefcase" size={20} color="#059669" />
+              <Text style={[styles.statValue, { color: '#059669' }]}>{tutor.years_experience || '0'}</Text>
               <Text style={styles.statLabel}>experience</Text>
             </View>
             <View style={[styles.statCard, { backgroundColor: '#FFF7ED' }]}>
@@ -226,7 +226,7 @@ const TutorProfileViewer = ({
           <Section id="education" iconName="award" title="Education & Experience">
             {tutor.years_experience && (
               <View style={styles.infoRow}>
-                <Icon name="clock" size={16} color="#2563EB" />
+                <Icon name="clock" size={16} color="#2F5BEA" />
                 <View style={styles.infoRowText}>
                   <Text style={styles.subLabel}>Experience</Text>
                   <Text style={styles.bodyText}>{tutor.years_experience}</Text>
@@ -235,7 +235,7 @@ const TutorProfileViewer = ({
             )}
             {tutor.education && (
               <View style={styles.infoRow}>
-                <Icon name="book" size={16} color="#7C3AED" />
+                <Icon name="book" size={16} color="#2F5BEA" />
                 <View style={styles.infoRowText}>
                   <Text style={styles.subLabel}>Education</Text>
                   <Text style={styles.bodyText}>{tutor.education}</Text>
@@ -306,15 +306,15 @@ const TutorProfileViewer = ({
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  container: { flex: 1, backgroundColor: '#F6F8FC' },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
   loadingText: { color: '#6B7280', fontSize: 13 },
   errorText: { color: '#EF4444', fontSize: 14, marginTop: 8, textAlign: 'center', paddingHorizontal: 20 },
-  closeBtnLarge: { marginTop: 16, backgroundColor: '#2563EB', borderRadius: 10, paddingHorizontal: 24, paddingVertical: 10 },
+  closeBtnLarge: { marginTop: 16, backgroundColor: '#2F5BEA', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10 },
   closeBtnLargeText: { color: '#fff', fontWeight: '600' },
 
   // Header
-  header: { backgroundColor: '#2563EB', paddingHorizontal: 14, paddingVertical: 16 },
+  header: { backgroundColor: '#2F5BEA', paddingHorizontal: 14, paddingVertical: 16 },
   headerContent: { flexDirection: 'row', gap: 12, paddingRight: 36 },
   avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
   avatarInitial: { color: '#fff', fontSize: 26, fontWeight: '700' },
@@ -333,39 +333,39 @@ const styles = StyleSheet.create({
 
   // Stats
   statsGrid: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  statCard: { flex: 1, alignItems: 'center', padding: 10, borderRadius: 10 },
+  statCard: { flex: 1, alignItems: 'center', padding: 10, borderRadius: 12 },
   statValue: { fontSize: 18, fontWeight: '700', marginTop: 4 },
   statLabel: { fontSize: 10, color: '#6B7280', marginTop: 2 },
 
   // Section accordion
-  sectionCard: { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 8, overflow: 'hidden' },
+  sectionCard: { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#E6EAF2', marginBottom: 8, overflow: 'hidden' },
   sectionBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingVertical: 14 },
   sectionBtnLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontWeight: '700', fontSize: 15, color: '#1F2937' },
-  sectionBody: { paddingHorizontal: 14, paddingBottom: 14, borderTopWidth: 1, borderTopColor: '#F3F4F6' },
+  sectionTitle: { fontWeight: '700', fontSize: 15, color: '#111827' },
+  sectionBody: { paddingHorizontal: 14, paddingBottom: 14, borderTopWidth: 1, borderTopColor: '#F3F5FA' },
 
   subLabel: { fontSize: 12, fontWeight: '600', color: '#374151', marginBottom: 4, marginTop: 8 },
   bodyText: { fontSize: 13, color: '#4B5563', lineHeight: 19 },
   emptyText: { fontSize: 13, color: '#9CA3AF', fontStyle: 'italic' },
   subsection: { marginTop: 10 },
-  philosophyBlock: { marginTop: 12, backgroundColor: '#F9FAFB', borderRadius: 8, padding: 10 },
+  philosophyBlock: { marginTop: 12, backgroundColor: '#F6F8FC', borderRadius: 12, padding: 10 },
 
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
-  chipBlue: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#DBEAFE', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
-  chipBlueText: { color: '#1D4ED8', fontSize: 12, fontWeight: '500' },
-  chipGreen: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#DCFCE7', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
+  chipBlue: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8EEFD', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
+  chipBlueText: { color: '#1E45C8', fontSize: 12, fontWeight: '500' },
+  chipGreen: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#E6F7EF', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
   chipGreenText: { color: '#14532D', fontSize: 12, fontWeight: '500' },
-  chipPurple: { backgroundColor: '#EDE9FE', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
-  chipPurpleText: { color: '#5B21B6', fontSize: 12 },
+  chipPurple: { backgroundColor: '#E8EEFD', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
+  chipPurpleText: { color: '#1E45C8', fontSize: 12 },
 
   infoRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', marginTop: 10 },
   infoRowText: { flex: 1 },
 
   // Actions
-  actions: { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingHorizontal: 14, paddingVertical: 12, gap: 8 },
-  messageBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#2563EB', borderRadius: 12, paddingVertical: 14 },
+  actions: { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F3F5FA', paddingHorizontal: 14, paddingVertical: 12, gap: 8 },
+  messageBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#2F5BEA', borderRadius: 16, paddingVertical: 14 },
   messageBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-  closeActionBtn: { backgroundColor: '#F3F4F6', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
+  closeActionBtn: { backgroundColor: '#F3F5FA', borderRadius: 16, paddingVertical: 12, alignItems: 'center' },
   closeActionBtnText: { color: '#374151', fontWeight: '600', fontSize: 14 },
 });
 

@@ -21,9 +21,9 @@ const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const DAY_KEYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const TIME_SLOTS = [
   { key: 'early_morning', label: '6–9 AM',  color: '#fef3c7' },
-  { key: 'morning',       label: '9–12 PM', color: '#dbeafe' },
-  { key: 'afternoon',     label: '12–3 PM', color: '#dcfce7' },
-  { key: 'late_afternoon',label: '3–6 PM',  color: '#ede9fe' },
+  { key: 'morning',       label: '9–12 PM', color: '#E8EEFD' },
+  { key: 'afternoon',     label: '12–3 PM', color: '#E6F7EF' },
+  { key: 'late_afternoon',label: '3–6 PM',  color: '#E8EEFD' },
   { key: 'evening',       label: '6–9 PM',  color: '#fee2e2' },
   { key: 'night',         label: '9–12 AM', color: '#f1f5f9' },
 ];
@@ -35,7 +35,7 @@ const buildDefaultSchedule = () => {
 };
 
 // ─── Section wrapper ──────────────────────────────────────────────────────────
-const Section = ({ title, icon, children, accent = '#16a34a' }) => (
+const Section = ({ title, icon, children, accent = '#059669' }) => (
   <View style={[styles.section, { borderTopColor: accent }]}>
     <View style={styles.sectionHeader}>
       <View style={[styles.sectionIconWrap, { backgroundColor: accent + '18' }]}>
@@ -63,7 +63,7 @@ const ValueText = ({ value, fallback = 'Not set' }) => (
 );
 
 // ─── Option chip row ──────────────────────────────────────────────────────────
-const ChipRow = ({ options, value, onChange, accent = '#16a34a' }) => (
+const ChipRow = ({ options, value, onChange, accent = '#059669' }) => (
   <View style={styles.chipOptions}>
     {options.map(opt => {
       const active = value === opt.value;
@@ -84,7 +84,7 @@ const ChipRow = ({ options, value, onChange, accent = '#16a34a' }) => (
 );
 
 // ─── Tag display ──────────────────────────────────────────────────────────────
-const TagDisplay = ({ items, color = '#dcfce7', textColor = '#14532d' }) => (
+const TagDisplay = ({ items, color = '#E6F7EF', textColor = '#14532d' }) => (
   <View style={styles.tagRow}>
     {items.length > 0
       ? items.map((item, i) => (
@@ -382,7 +382,7 @@ const TutorProfile = ({ onClose, visible = true, token: tokenProp }) => {
       <Modal visible={visible} animationType="fade">
         <SafeAreaView style={styles.loadingScreen}>
           <View style={styles.loadingCard}>
-            <ActivityIndicator size="large" color="#16a34a" />
+            <ActivityIndicator size="large" color="#059669" />
             <Text style={styles.loadingText}>Loading profile…</Text>
           </View>
         </SafeAreaView>
@@ -442,11 +442,11 @@ const TutorProfile = ({ onClose, visible = true, token: tokenProp }) => {
           {/* Stats row */}
           {!editing && (
             <View style={styles.statsRow}>
-              <StatBadge icon="book-open" value={formData.expertise.length} label="Subjects" color="#16a34a" />
+              <StatBadge icon="book-open" value={formData.expertise.length} label="Subjects" color="#059669" />
               <View style={styles.statDivider} />
-              <StatBadge icon="globe" value={formData.languages.length} label="Languages" color="#2563eb" />
+              <StatBadge icon="globe" value={formData.languages.length} label="Languages" color="#2F5BEA" />
               <View style={styles.statDivider} />
-              <StatBadge icon="calendar" value={activeSlots} label="Slots" color="#7c3aed" />
+              <StatBadge icon="calendar" value={activeSlots} label="Slots" color="#2F5BEA" />
             </View>
           )}
 
@@ -461,7 +461,7 @@ const TutorProfile = ({ onClose, visible = true, token: tokenProp }) => {
                 style={[styles.tab, activeTab === tab.key && styles.tabActive]}
                 onPress={() => setActiveTab(tab.key)}
               >
-                <Icon name={tab.icon} size={13} color={activeTab === tab.key ? '#16a34a' : '#9ca3af'} />
+                <Icon name={tab.icon} size={13} color={activeTab === tab.key ? '#059669' : '#9ca3af'} />
                 <Text style={[styles.tabText, activeTab === tab.key && styles.tabTextActive]}>
                   {tab.label}
                 </Text>
@@ -484,7 +484,7 @@ const TutorProfile = ({ onClose, visible = true, token: tokenProp }) => {
             {activeTab === 'profile' ? (
               <>
                 {/* ── Personal ── */}
-                <Section title="Personal Information" icon="user" accent="#16a34a">
+                <Section title="Personal Information" icon="user" accent="#059669">
                   <FieldBlock label="Full Name" required>
                     {editing
                       ? <TextInput
@@ -503,7 +503,7 @@ const TutorProfile = ({ onClose, visible = true, token: tokenProp }) => {
                       ? <ChipRow
                           value={formData.gender}
                           onChange={v => update('gender', v)}
-                          accent="#16a34a"
+                          accent="#059669"
                           options={[
                             { value: 'male',              label: 'Male' },
                             { value: 'female',            label: 'Female' },
@@ -516,7 +516,7 @@ const TutorProfile = ({ onClose, visible = true, token: tokenProp }) => {
                 </Section>
 
                 {/* ── Professional ── */}
-                <Section title="Professional Details" icon="briefcase" accent="#2563eb">
+                <Section title="Professional Details" icon="briefcase" accent="#2F5BEA">
                   <FieldBlock label="Bio" required>
                     {editing
                       ? <TextInput
@@ -578,7 +578,7 @@ const TutorProfile = ({ onClose, visible = true, token: tokenProp }) => {
                           />
                           <Text style={styles.hint}>Separate with commas</Text>
                         </>
-                      : <TagDisplay items={formData.expertise} color="#dcfce7" textColor="#14532d" />}
+                      : <TagDisplay items={formData.expertise} color="#E6F7EF" textColor="#14532d" />}
                   </FieldBlock>
 
                   <FieldBlock label="Languages" required>
@@ -595,14 +595,14 @@ const TutorProfile = ({ onClose, visible = true, token: tokenProp }) => {
                           />
                           <Text style={styles.hint}>Separate with commas</Text>
                         </>
-                      : <TagDisplay items={formData.languages} color="#dbeafe" textColor="#1d4ed8" />}
+                      : <TagDisplay items={formData.languages} color="#E8EEFD" textColor="#1E45C8" />}
                   </FieldBlock>
 
                   <FieldBlock label="Teaching Style">
                     <ChipRow
                       value={formData.teaching_style}
                       onChange={v => update('teaching_style', v)}
-                      accent="#2563eb"
+                      accent="#2F5BEA"
                       options={[
                         { value: 'adaptive',     label: 'Adaptive' },
                         { value: 'structured',   label: 'Structured' },
@@ -618,7 +618,7 @@ const TutorProfile = ({ onClose, visible = true, token: tokenProp }) => {
                         <ChipRow
                           value={formData.min_session_length}
                           onChange={v => update('min_session_length', v)}
-                          accent="#2563eb"
+                          accent="#2F5BEA"
                           options={[
                             { value: '30', label: '30m' },
                             { value: '45', label: '45m' },
@@ -646,7 +646,7 @@ const TutorProfile = ({ onClose, visible = true, token: tokenProp }) => {
                 </Section>
 
                 {/* ── Background ── */}
-                <Section title="Background" icon="award" accent="#7c3aed">
+                <Section title="Background" icon="award" accent="#2F5BEA">
                   <FieldBlock label="Education" required>
                     {editing
                       ? <TextInput
@@ -739,11 +739,11 @@ const TutorProfile = ({ onClose, visible = true, token: tokenProp }) => {
                 {/* Legend */}
                 <View style={styles.legend}>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#dcfce7', borderColor: '#16a34a' }]} />
+                    <View style={[styles.legendDot, { backgroundColor: '#E6F7EF', borderColor: '#059669' }]} />
                     <Text style={styles.legendText}>Available</Text>
                   </View>
                   <View style={styles.legendItem}>
-                    <View style={[styles.legendDot, { backgroundColor: '#f3f4f6', borderColor: '#e5e7eb' }]} />
+                    <View style={[styles.legendDot, { backgroundColor: '#F3F5FA', borderColor: '#E6EAF2' }]} />
                     <Text style={styles.legendText}>Unavailable</Text>
                   </View>
                 </View>
@@ -886,11 +886,11 @@ const styles = StyleSheet.create({
   avatarImage:  { width: 54, height: 54, borderRadius: 27, borderWidth: 2.5, borderColor: 'rgba(255,255,255,0.6)' },
   avatarPlaceholder: { width: 54, height: 54, borderRadius: 27, backgroundColor: 'rgba(255,255,255,0.18)', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: 'rgba(255,255,255,0.4)' },
   avatarInitial:{ color: '#fff', fontSize: 22, fontWeight: '800' },
-  avatarBadge:  { position: 'absolute', bottom: 0, right: 0, width: 18, height: 18, borderRadius: 9, backgroundColor: '#16a34a', borderWidth: 1.5, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
+  avatarBadge:  { position: 'absolute', bottom: 0, right: 0, width: 18, height: 18, borderRadius: 9, backgroundColor: '#059669', borderWidth: 1.5, borderColor: '#fff', alignItems: 'center', justifyContent: 'center' },
   headerInfo:   { flex: 1 },
   headerName:   { color: '#fff', fontSize: 17, fontWeight: '800', letterSpacing: -0.3 },
   headerMeta:   { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 3 },
-  stylePill:    { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
+  stylePill:    { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 2 },
   stylePillText:{ color: 'rgba(255,255,255,0.9)', fontSize: 11, textTransform: 'capitalize' },
   rateText:     { color: 'rgba(255,255,255,0.85)', fontSize: 12, fontWeight: '600' },
   closeBtn:     { padding: 6, backgroundColor: 'rgba(0,0,0,0.15)', borderRadius: 18 },
@@ -905,9 +905,9 @@ const styles = StyleSheet.create({
   // Tab bar
   tabBar:       { flexDirection: 'row', backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f0f0f0' },
   tab:          { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 11 },
-  tabActive:    { borderBottomWidth: 2, borderBottomColor: '#16a34a' },
+  tabActive:    { borderBottomWidth: 2, borderBottomColor: '#059669' },
   tabText:      { fontSize: 13, color: '#9ca3af', fontWeight: '500' },
-  tabTextActive:{ color: '#16a34a', fontWeight: '700' },
+  tabTextActive:{ color: '#059669', fontWeight: '700' },
 
   // Section
   section:      { backgroundColor: '#fff', borderRadius: 14, padding: 16, marginBottom: 12, borderTopWidth: 3, elevation: 1, shadowColor: '#000', shadowOpacity: 0.04, shadowRadius: 4, shadowOffset: { height: 2, width: 0 } },
@@ -920,7 +920,7 @@ const styles = StyleSheet.create({
   fieldLabel:   { fontSize: 11, fontWeight: '700', color: '#6b7280', marginBottom: 5, textTransform: 'uppercase', letterSpacing: 0.5 },
   fieldValue:   { fontSize: 14, color: '#111827', lineHeight: 20 },
   required:     { color: '#ef4444' },
-  input:        { borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: '#111827', backgroundColor: '#fafafa' },
+  input:        { borderWidth: 1.5, borderColor: '#E6EAF2', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: '#111827', backgroundColor: '#fafafa' },
   textarea:     { minHeight: 80, textAlignVertical: 'top', lineHeight: 20 },
   hint:         { fontSize: 11, color: '#9ca3af', marginTop: 3 },
 
@@ -931,7 +931,7 @@ const styles = StyleSheet.create({
 
   // Chip options
   chipOptions:  { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  optionChip:   { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1.5, borderColor: '#e5e7eb', backgroundColor: '#fafafa' },
+  optionChip:   { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, borderWidth: 1.5, borderColor: '#E6EAF2', backgroundColor: '#fafafa' },
   optionChipText:{ fontSize: 12, color: '#6b7280' },
 
   // Tags
@@ -941,15 +941,15 @@ const styles = StyleSheet.create({
 
   // Danger
   dangerSection:{ marginBottom: 12 },
-  deleteBtn:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1.5, borderColor: '#fca5a5', backgroundColor: '#fff5f5', borderRadius: 12, paddingVertical: 14 },
+  deleteBtn:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderWidth: 1.5, borderColor: '#fca5a5', backgroundColor: '#fff5f5', borderRadius: 16, paddingVertical: 14 },
   deleteBtnText:{ color: '#dc2626', fontWeight: '600', fontSize: 14 },
 
   // Schedule tab
   scheduleTab:  { padding: 4 },
   scheduleHeader:{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
   scheduleTitle:{ fontSize: 16, fontWeight: '800', color: '#111827' },
-  slotCountBadge:{ backgroundColor: '#f3f4f6', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
-  slotCountBadgeActive: { backgroundColor: '#dcfce7' },
+  slotCountBadge:{ backgroundColor: '#F3F5FA', borderRadius: 20, paddingHorizontal: 10, paddingVertical: 4 },
+  slotCountBadgeActive: { backgroundColor: '#E6F7EF' },
   slotCountText:{ fontSize: 12, color: '#6b7280', fontWeight: '500' },
   slotCountTextActive: { color: '#15803d', fontWeight: '700' },
   scheduleTip:  { fontSize: 12, color: '#9ca3af', marginBottom: 10, fontStyle: 'italic' },
@@ -970,24 +970,24 @@ const styles = StyleSheet.create({
   timeCellActive:{ },
   timeCellText: { fontSize: 9, color: '#9ca3af', textAlign: 'right', lineHeight: 13 },
   timeCellTextActive: { color: '#15803d', fontWeight: '700' },
-  slotCell:     { width: 42, height: 34, marginHorizontal: 0, borderRadius: 8, backgroundColor: '#f3f4f6', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#e5e7eb' },
-  slotCellActive:{ backgroundColor: '#dcfce7', borderColor: '#16a34a' },
-  slotCheck:    { width: 10, height: 10, borderRadius: 5, backgroundColor: '#16a34a' },
+  slotCell:     { width: 42, height: 34, marginHorizontal: 0, borderRadius: 8, backgroundColor: '#F3F5FA', alignItems: 'center', justifyContent: 'center', borderWidth: 1.5, borderColor: '#E6EAF2' },
+  slotCellActive:{ backgroundColor: '#E6F7EF', borderColor: '#059669' },
+  slotCheck:    { width: 10, height: 10, borderRadius: 5, backgroundColor: '#059669' },
 
   // Quick select
   quickSelectRow:{ flexDirection: 'row', gap: 8, marginTop: 4 },
-  quickBtn:     { flex: 1, backgroundColor: '#f3f4f6', borderRadius: 8, paddingVertical: 9, alignItems: 'center', borderWidth: 1, borderColor: '#e5e7eb' },
+  quickBtn:     { flex: 1, backgroundColor: '#F3F5FA', borderRadius: 12, paddingVertical: 9, alignItems: 'center', borderWidth: 1, borderColor: '#E6EAF2' },
   quickBtnText: { fontSize: 12, color: '#374151', fontWeight: '600' },
 
   // Footer
-  footer:       { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingHorizontal: 14, paddingVertical: 12, elevation: 8, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { height: -2, width: 0 } },
+  footer:       { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F3F5FA', paddingHorizontal: 14, paddingVertical: 12, elevation: 8, shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { height: -2, width: 0 } },
   footerRow:    { flexDirection: 'row', gap: 10 },
-  cancelBtn:    { flex: 1, borderWidth: 1.5, borderColor: '#e5e7eb', borderRadius: 12, paddingVertical: 13, alignItems: 'center' },
+  cancelBtn:    { flex: 1, borderWidth: 1.5, borderColor: '#E6EAF2', borderRadius: 16, paddingVertical: 13, alignItems: 'center' },
   cancelBtnText:{ fontSize: 14, color: '#374151', fontWeight: '500' },
-  saveBtn:      { flex: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#16a34a', borderRadius: 12, paddingVertical: 13 },
+  saveBtn:      { flex: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#059669', borderRadius: 16, paddingVertical: 13 },
   saveBtnDisabled:{ opacity: 0.6 },
   saveBtnText:  { color: '#fff', fontWeight: '700', fontSize: 14 },
-  editBtn:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#15803d', borderRadius: 12, paddingVertical: 13 },
+  editBtn:      { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#15803d', borderRadius: 16, paddingVertical: 13 },
   editBtnText:  { color: '#fff', fontWeight: '700', fontSize: 14 },
 });
 

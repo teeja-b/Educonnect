@@ -517,7 +517,7 @@ const joinAgoraChannel = async (channelName) => {
           <Text style={styles.calleeStatus}>{statusLabel}</Text>
 
           {callStatus === 'calling' && (
-            <ActivityIndicator color="#a78bfa" size="large" style={{ marginTop: 20 }} />
+            <ActivityIndicator color="#8FA8F5" size="large" style={{ marginTop: 20 }} />
           )}
 
           {!!callError && (
@@ -564,7 +564,7 @@ const joinAgoraChannel = async (channelName) => {
 const styles = StyleSheet.create({
   headerCallBtn: {
     width: 34, height: 34, borderRadius: 17,
-    backgroundColor: '#16a34a',
+    backgroundColor: '#059669',
     alignItems: 'center', justifyContent: 'center',
   },
   disabledBtn: { opacity: 0.4 },
@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
   },
   statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#6b7280' },
   statusDotActive: { backgroundColor: '#4ade80' },
-  statusText: { color: '#d1d5db', fontSize: 13, letterSpacing: 0.2 },
+  statusText: { color: '#D5DCEA', fontSize: 13, letterSpacing: 0.2 },
   avatarSection: {
     width: 180, height: 180,
     alignItems: 'center', justifyContent: 'center',
@@ -592,14 +592,14 @@ const styles = StyleSheet.create({
   pulseRing: {
     position: 'absolute',
     width: 140, height: 140, borderRadius: 70,
-    backgroundColor: '#7c3aed',
+    backgroundColor: '#2F5BEA',
   },
   pulseRingOuter: { width: 170, height: 170, borderRadius: 85 },
   avatarCircle: {
     width: 110, height: 110, borderRadius: 55,
-    backgroundColor: '#6d28d9',
+    backgroundColor: '#1E45C8',
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#7c3aed', shadowOpacity: 0.7,
+    shadowColor: '#2F5BEA', shadowOpacity: 0.7,
     shadowRadius: 28, elevation: 14,
   },
   calleeName: {
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
   errorBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: 'rgba(127,29,29,0.55)',
-    borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10,
+    borderRadius: 12, paddingHorizontal: 14, paddingVertical: 10,
     marginHorizontal: 16,
   },
   errorText: { color: '#fca5a5', fontSize: 13, flex: 1 },

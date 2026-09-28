@@ -78,7 +78,7 @@ const CourseMaterialsViewer = ({ course, onClose, API_URL = 'https://hult-663884
       case 'video': return '#EF4444';
       case 'image': return '#3B82F6';
       case 'presentation': return '#F97316';
-      case 'document': return '#16A34A';
+      case 'document': return '#059669';
       default: return '#6B7280';
     }
   };
@@ -123,7 +123,7 @@ const CourseMaterialsViewer = ({ course, onClose, API_URL = 'https://hult-663884
           <View style={styles.playerContent}>
             {pdfLoading && (
               <View style={styles.loadingOverlay}>
-                <ActivityIndicator size="large" color="#A78BFA" />
+                <ActivityIndicator size="large" color="#8FA8F5" />
                 <Text style={styles.loadingText}>Loading…</Text>
               </View>
             )}
@@ -208,7 +208,7 @@ const CourseMaterialsViewer = ({ course, onClose, API_URL = 'https://hult-663884
         {course.description ? (
           <View style={styles.descCard}>
             <View style={styles.descHeader}>
-              <Icon name="book-open" size={16} color="#7C3AED" />
+              <Icon name="book-open" size={16} color="#2F5BEA" />
               <Text style={styles.descTitle}>About This Course</Text>
             </View>
             <Text style={styles.descText}>{course.description}</Text>
@@ -220,12 +220,12 @@ const CourseMaterialsViewer = ({ course, onClose, API_URL = 'https://hult-663884
 
         {loading ? (
           <View style={styles.centered}>
-            <ActivityIndicator size="large" color="#7C3AED" />
+            <ActivityIndicator size="large" color="#2F5BEA" />
             <Text style={styles.loadingLabel}>Loading content…</Text>
           </View>
         ) : sections.length === 0 ? (
           <View style={styles.emptyBox}>
-            <Icon name="book-open" size={40} color="#D1D5DB" />
+            <Icon name="book-open" size={40} color="#D5DCEA" />
             <Text style={styles.emptyText}>No content uploaded yet</Text>
             <Text style={styles.emptySubtext}>Check back later</Text>
           </View>
@@ -301,7 +301,7 @@ const CourseMaterialsViewer = ({ course, onClose, API_URL = 'https://hult-663884
                   ))
                 ) : (
                   <View style={styles.emptySection}>
-                    <Icon name="file-text" size={28} color="#E5E7EB" />
+                    <Icon name="file-text" size={28} color="#E6EAF2" />
                     <Text style={styles.emptySectionText}>No materials in this section yet</Text>
                   </View>
                 )
@@ -316,7 +316,7 @@ const CourseMaterialsViewer = ({ course, onClose, API_URL = 'https://hult-663884
           <View style={styles.legendGrid}>
             {[
               { type: 'video', label: 'Video', icon: 'video', color: '#EF4444' },
-              { type: 'document', label: 'Document / PDF', icon: 'file-text', color: '#16A34A' },
+              { type: 'document', label: 'Document / PDF', icon: 'file-text', color: '#059669' },
               { type: 'presentation', label: 'Presentation', icon: 'monitor', color: '#F97316' },
               { type: 'image', label: 'Image', icon: 'image', color: '#3B82F6' },
             ].map(item => (
@@ -328,7 +328,7 @@ const CourseMaterialsViewer = ({ course, onClose, API_URL = 'https://hult-663884
           </View>
           {course.offline_available && (
             <View style={styles.offlineBadge}>
-              <Icon name="download" size={14} color="#2563EB" />
+              <Icon name="download" size={14} color="#2F5BEA" />
               <View style={styles.offlineText}>
                 <Text style={styles.offlineTitle}>Offline Available</Text>
                 <Text style={styles.offlineSub}>All materials can be saved for offline use</Text>
@@ -344,76 +344,76 @@ const CourseMaterialsViewer = ({ course, onClose, API_URL = 'https://hult-663884
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  container: { flex: 1, backgroundColor: '#F6F8FC' },
 
   // Header
-  courseHeader: { backgroundColor: '#7C3AED', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12, gap: 10 },
+  courseHeader: { backgroundColor: '#2F5BEA', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12, gap: 10 },
   closeBtn: { padding: 4 },
   courseHeaderText: { flex: 1 },
   courseTitle: { color: '#fff', fontWeight: '700', fontSize: 15 },
-  courseSubtitle: { color: '#DDD6FE', fontSize: 12, marginTop: 2 },
+  courseSubtitle: { color: '#BFD0FA', fontSize: 12, marginTop: 2 },
   doneBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#4ADE80', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 99, gap: 4 },
   doneText: { fontSize: 11, color: '#14532D', fontWeight: '700' },
-  progressBg: { height: 4, backgroundColor: 'rgba(255,255,255,0.3)', backgroundColor: '#DDD6FE' },
-  progressFill: { height: 4, backgroundColor: '#7C3AED' },
+  progressBg: { height: 4, backgroundColor: 'rgba(255,255,255,0.3)', backgroundColor: '#BFD0FA' },
+  progressFill: { height: 4, backgroundColor: '#2F5BEA' },
 
   scrollContent: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: 12, paddingBottom: 32 },
 
   // Description
-  descCard: { backgroundColor: '#EDE9FE', borderRadius: 12, padding: 14, borderWidth: 1, borderColor: '#DDD6FE', marginBottom: 14 },
+  descCard: { backgroundColor: '#E8EEFD', borderRadius: 16, padding: 14, borderWidth: 1, borderColor: '#BFD0FA', marginBottom: 14 },
   descHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
-  descTitle: { fontWeight: '700', fontSize: 13, color: '#1F2937' },
+  descTitle: { fontWeight: '700', fontSize: 13, color: '#111827' },
   descText: { fontSize: 13, color: '#374151', lineHeight: 19 },
 
-  sectionHeading: { fontSize: 15, fontWeight: '700', color: '#1F2937', marginBottom: 10 },
+  sectionHeading: { fontSize: 15, fontWeight: '700', color: '#111827', marginBottom: 10 },
 
   // Loading / empty
   centered: { alignItems: 'center', paddingVertical: 40 },
   loadingLabel: { color: '#6B7280', fontSize: 13, marginTop: 10 },
-  emptyBox: { alignItems: 'center', paddingVertical: 40, backgroundColor: '#F3F4F6', borderRadius: 12 },
+  emptyBox: { alignItems: 'center', paddingVertical: 40, backgroundColor: '#F3F5FA', borderRadius: 16 },
   emptyText: { color: '#6B7280', fontSize: 13, marginTop: 8 },
   emptySubtext: { color: '#9CA3AF', fontSize: 11, marginTop: 2 },
 
   // Section card
-  sectionCard: { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 10, overflow: 'hidden' },
-  sectionHeader: { backgroundColor: '#FAF5FF', paddingHorizontal: 14, paddingVertical: 12, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#F3E8FF' },
+  sectionCard: { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#E6EAF2', marginBottom: 10, overflow: 'hidden' },
+  sectionHeader: { backgroundColor: '#F3F5FA', paddingHorizontal: 14, paddingVertical: 12, flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#E8EEFD' },
   sectionHeaderLeft: { flex: 1, marginRight: 8 },
-  sectionTitle: { fontWeight: '700', fontSize: 13, color: '#1F2937' },
+  sectionTitle: { fontWeight: '700', fontSize: 13, color: '#111827' },
   sectionDesc: { fontSize: 11, color: '#6B7280', marginTop: 2 },
   sectionCount: { fontSize: 11, color: '#9CA3AF', marginTop: 2 },
 
   // Material row
-  materialRow: { flexDirection: 'row', alignItems: 'flex-start', padding: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6', backgroundColor: '#fff' },
-  materialRowActive: { backgroundColor: '#FAF5FF' },
+  materialRow: { flexDirection: 'row', alignItems: 'flex-start', padding: 12, borderTopWidth: 1, borderTopColor: '#F3F5FA', backgroundColor: '#fff' },
+  materialRowActive: { backgroundColor: '#F3F5FA' },
   matIconBox: { width: 36, height: 36, borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginRight: 10, flexShrink: 0 },
   matInfo: { flex: 1 },
-  matTitle: { fontWeight: '600', fontSize: 13, color: '#1F2937' },
+  matTitle: { fontWeight: '600', fontSize: 13, color: '#111827' },
   matDesc: { fontSize: 11, color: '#6B7280', marginTop: 2 },
   matMeta: { flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 },
-  metaTag: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F4F6', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
+  metaTag: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#F3F5FA', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
   metaText: { fontSize: 10, color: '#6B7280', textTransform: 'capitalize' },
   matActions: { flexDirection: 'row', gap: 6, marginTop: 8 },
-  viewBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#7C3AED', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, flex: 1, justifyContent: 'center' },
-  saveBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#3B82F6', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, justifyContent: 'center' },
+  viewBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#2F5BEA', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, flex: 1, justifyContent: 'center' },
+  saveBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#3B82F6', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, justifyContent: 'center' },
   viewBtnText: { color: '#fff', fontSize: 11, fontWeight: '600' },
 
   emptySection: { alignItems: 'center', paddingVertical: 24 },
   emptySectionText: { fontSize: 11, color: '#9CA3AF', marginTop: 4 },
 
   // Legend
-  legendCard: { backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E5E7EB', padding: 14, marginTop: 8 },
-  legendTitle: { fontWeight: '700', fontSize: 13, color: '#1F2937', marginBottom: 10 },
+  legendCard: { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#E6EAF2', padding: 14, marginTop: 8 },
+  legendTitle: { fontWeight: '700', fontSize: 13, color: '#111827', marginBottom: 10 },
   legendGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5, width: '45%' },
   legendLabel: { fontSize: 12, color: '#4B5563' },
-  offlineBadge: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: '#EFF6FF', borderWidth: 1, borderColor: '#BFDBFE', borderRadius: 8, padding: 10, marginTop: 10 },
+  offlineBadge: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, backgroundColor: '#E8EEFD', borderWidth: 1, borderColor: '#BFD0FA', borderRadius: 12, padding: 10, marginTop: 10 },
   offlineText: { flex: 1 },
   offlineTitle: { fontSize: 12, fontWeight: '700', color: '#1E3A5F' },
   offlineSub: { fontSize: 11, color: '#3B82F6', marginTop: 2 },
 
   // Player modal
   playerModal: { flex: 1, backgroundColor: '#111827' },
-  playerHeader: { backgroundColor: '#1F2937', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12 },
+  playerHeader: { backgroundColor: '#111827', flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12 },
   playerHeaderLeft: { flex: 1, marginRight: 10 },
   playerTitle: { color: '#fff', fontWeight: '600', fontSize: 14 },
   playerDesc: { color: '#9CA3AF', fontSize: 11, marginTop: 2 },
@@ -426,10 +426,10 @@ const styles = StyleSheet.create({
   errorTitle: { color: '#fff', fontSize: 14, fontWeight: '600', marginTop: 12 },
   errorSub: { color: '#9CA3AF', fontSize: 12, marginTop: 6, textAlign: 'center' },
   errorButtons: { flexDirection: 'row', gap: 10, marginTop: 16 },
-  playerActions: { backgroundColor: '#1F2937', flexDirection: 'row', padding: 12, gap: 10 },
-  actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 8, gap: 6 },
-  btnBlue: { backgroundColor: '#2563EB' },
-  btnGreen: { backgroundColor: '#16A34A' },
+  playerActions: { backgroundColor: '#111827', flexDirection: 'row', padding: 12, gap: 10 },
+  actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 10, borderRadius: 12, gap: 6 },
+  btnBlue: { backgroundColor: '#2F5BEA' },
+  btnGreen: { backgroundColor: '#059669' },
   btnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
 });
 

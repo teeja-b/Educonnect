@@ -234,7 +234,7 @@ const StudentProfile = ({ onClose, visible = true }) => {
           minimumValue={1} maximumValue={10} step={1}
           value={formData[field]}
           onValueChange={val => update(field, val)}
-          minimumTrackTintColor={color} maximumTrackTintColor="#E5E7EB"
+          minimumTrackTintColor={color} maximumTrackTintColor="#E6EAF2"
           thumbTintColor={color}
           style={styles.slider}
         />
@@ -250,7 +250,7 @@ const StudentProfile = ({ onClose, visible = true }) => {
     return (
       <Modal visible={visible} animationType="slide">
         <SafeAreaView style={styles.centered}>
-          <ActivityIndicator size="large" color="#2563EB" />
+          <ActivityIndicator size="large" color="#2F5BEA" />
           <Text style={styles.loadingText}>Loading profile…</Text>
         </SafeAreaView>
       </Modal>
@@ -280,7 +280,7 @@ const StudentProfile = ({ onClose, visible = true }) => {
             {/* Personal Info */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Icon name="user" size={15} color="#2563EB" />
+                <Icon name="user" size={15} color="#2F5BEA" />
                 <Text style={styles.sectionTitle}>Personal Information</Text>
               </View>
               {[
@@ -306,7 +306,7 @@ const StudentProfile = ({ onClose, visible = true }) => {
             {/* Academic Details (Optional) */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Icon name="book" size={15} color="#2563EB" />
+                <Icon name="book" size={15} color="#2F5BEA" />
                 <Text style={styles.sectionTitle}>Academic Details</Text>
                 <View style={styles.optionalBadge}>
                   <Text style={styles.optionalBadgeText}>Optional</Text>
@@ -352,7 +352,7 @@ const StudentProfile = ({ onClose, visible = true }) => {
             {/* Learning Profile */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Icon name="book-open" size={15} color="#2563EB" />
+                <Icon name="book-open" size={15} color="#2F5BEA" />
                 <Text style={styles.sectionTitle}>Learning Profile</Text>
               </View>
               <SelectRow
@@ -394,12 +394,12 @@ const StudentProfile = ({ onClose, visible = true }) => {
             {/* Skills Assessment */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Icon name="trending-up" size={15} color="#2563EB" />
+                <Icon name="trending-up" size={15} color="#2F5BEA" />
                 <Text style={styles.sectionTitle}>Skills Assessment</Text>
               </View>
-              <SkillBar label="Mathematics" field="math_score" color="#2563EB" />
-              <SkillBar label="Science" field="science_score" color="#16A34A" />
-              <SkillBar label="Language Arts" field="language_score" color="#7C3AED" />
+              <SkillBar label="Mathematics" field="math_score" color="#2F5BEA" />
+              <SkillBar label="Science" field="science_score" color="#059669" />
+              <SkillBar label="Language Arts" field="language_score" color="#2F5BEA" />
               <SkillBar label="Technology" field="tech_score" color="#EA580C" />
             </View>
 
@@ -439,67 +439,67 @@ const StudentProfile = ({ onClose, visible = true }) => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F9FAFB' },
+  container: { flex: 1, backgroundColor: '#F6F8FC' },
   flex: { flex: 1 },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   loadingText: { color: '#6B7280', marginTop: 10, fontSize: 13 },
 
-  header: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#2563EB', paddingHorizontal: 14, paddingVertical: 14 },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#2F5BEA', paddingHorizontal: 14, paddingVertical: 14 },
   avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   avatarInitial: { color: '#fff', fontSize: 20, fontWeight: '700' },
   headerInfo: { flex: 1 },
   headerName: { color: '#fff', fontWeight: '700', fontSize: 16 },
-  headerEmail: { color: '#BFDBFE', fontSize: 12, marginTop: 2 },
+  headerEmail: { color: '#BFD0FA', fontSize: 12, marginTop: 2 },
   closeBtn: { padding: 6 },
 
   scrollContent: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: 14, paddingBottom: 24 },
 
-  section: { backgroundColor: '#fff', borderRadius: 14, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#F3F4F6' },
+  section: { backgroundColor: '#fff', borderRadius: 14, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#F3F5FA' },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 12 },
   sectionTitle: { fontWeight: '700', fontSize: 13, color: '#374151' },
 
-  optionalBadge: { marginLeft: 'auto', backgroundColor: '#EFF6FF', borderRadius: 99, paddingHorizontal: 8, paddingVertical: 2 },
-  optionalBadgeText: { fontSize: 10, color: '#2563EB', fontWeight: '600' },
+  optionalBadge: { marginLeft: 'auto', backgroundColor: '#E8EEFD', borderRadius: 99, paddingHorizontal: 8, paddingVertical: 2 },
+  optionalBadgeText: { fontSize: 10, color: '#2F5BEA', fontWeight: '600' },
 
   locationRow: { flexDirection: 'row', alignItems: 'flex-start' },
   locationGap: { width: 10 },
 
   fieldBlock: { marginBottom: 12 },
   fieldLabel: { fontSize: 12, fontWeight: '600', color: '#6B7280', marginBottom: 4 },
-  fieldValue: { fontSize: 13, color: '#1F2937' },
+  fieldValue: { fontSize: 13, color: '#111827' },
   notSet: { color: '#9CA3AF', fontStyle: 'italic' },
-  input: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, fontSize: 13, color: '#1F2937', backgroundColor: '#F9FAFB' },
+  input: { borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, fontSize: 13, color: '#111827', backgroundColor: '#F6F8FC' },
   textarea: { minHeight: 72, textAlignVertical: 'top' },
 
   optionRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  optionChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, borderWidth: 1.5, borderColor: '#D1D5DB', backgroundColor: '#F9FAFB' },
-  optionChipActive: { borderColor: '#2563EB', backgroundColor: '#EFF6FF' },
+  optionChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, borderWidth: 1.5, borderColor: '#D5DCEA', backgroundColor: '#F6F8FC' },
+  optionChipActive: { borderColor: '#2F5BEA', backgroundColor: '#E8EEFD' },
   optionChipText: { fontSize: 12, color: '#6B7280', fontWeight: '500', textTransform: 'capitalize' },
-  optionChipTextActive: { color: '#2563EB', fontWeight: '700' },
+  optionChipTextActive: { color: '#2F5BEA', fontWeight: '700' },
 
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  chip: { backgroundColor: '#DBEAFE', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 99 },
-  chipText: { fontSize: 12, color: '#1D4ED8' },
+  chip: { backgroundColor: '#E8EEFD', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 99 },
+  chipText: { fontSize: 12, color: '#1E45C8' },
 
-  skillCard: { backgroundColor: '#F9FAFB', borderRadius: 10, padding: 12, marginBottom: 8 },
+  skillCard: { backgroundColor: '#F6F8FC', borderRadius: 12, padding: 12, marginBottom: 8 },
   skillHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   skillLabel: { fontSize: 12, fontWeight: '600', color: '#4B5563' },
   skillScore: { fontSize: 13, fontWeight: '700' },
   slider: { width: '100%', height: 30 },
-  barBg: { height: 6, backgroundColor: '#E5E7EB', borderRadius: 3 },
+  barBg: { height: 6, backgroundColor: '#E6EAF2', borderRadius: 3 },
   barFill: { height: 6, borderRadius: 3 },
 
   dividerRed: { height: 1, backgroundColor: '#FEE2E2', marginBottom: 12 },
-  deleteBtn: { backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
+  deleteBtn: { backgroundColor: '#FEF2F2', borderWidth: 1, borderColor: '#FECACA', borderRadius: 16, paddingVertical: 12, alignItems: 'center' },
   deleteBtnText: { color: '#DC2626', fontSize: 13, fontWeight: '600' },
 
-  footer: { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F3F4F6', paddingHorizontal: 14, paddingVertical: 12 },
+  footer: { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F3F5FA', paddingHorizontal: 14, paddingVertical: 12 },
   footerRow: { flexDirection: 'row', gap: 10 },
-  cancelBtn: { flex: 1, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 12, paddingVertical: 12, alignItems: 'center' },
+  cancelBtn: { flex: 1, borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 16, paddingVertical: 12, alignItems: 'center' },
   cancelBtnText: { fontSize: 14, color: '#374151', fontWeight: '500' },
-  saveBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#16A34A', borderRadius: 12, paddingVertical: 12 },
+  saveBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#059669', borderRadius: 16, paddingVertical: 12 },
   saveBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
-  editBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#2563EB', borderRadius: 12, paddingVertical: 12 },
+  editBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#2F5BEA', borderRadius: 16, paddingVertical: 12 },
   editBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
 });
 

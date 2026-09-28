@@ -53,7 +53,7 @@ const Picker = ({ label, value, options, onChange }) => (
   </View>
 );
 
-const Btn = ({ label, onPress, color = '#2563eb', disabled, icon }) => (
+const Btn = ({ label, onPress, color = '#2F5BEA', disabled, icon }) => (
   <TouchableOpacity
     style={[s.btn, { backgroundColor: disabled ? '#9ca3af' : color }]}
     onPress={onPress}
@@ -65,7 +65,7 @@ const Btn = ({ label, onPress, color = '#2563eb', disabled, icon }) => (
 );
 
 const FileTypeIcon = ({ type }) => {
-  const colors = { video: '#dc2626', image: '#2563eb', presentation: '#ea580c', document: '#16a34a' };
+  const colors = { video: '#dc2626', image: '#2F5BEA', presentation: '#ea580c', document: '#059669' };
   return <FileText size={16} color={colors[type] || '#6b7280'} />;
 };
 
@@ -284,7 +284,7 @@ const TutorCourseManager = ({ onClose }) => {
       <Modal visible animationType="fade" transparent>
         <View style={s.overlay}>
           <View style={s.loadCard}>
-            <ActivityIndicator size="large" color="#2563eb" />
+            <ActivityIndicator size="large" color="#2F5BEA" />
             <Text style={s.loadText}>Loading your courses…</Text>
           </View>
         </View>
@@ -312,7 +312,7 @@ const TutorCourseManager = ({ onClose }) => {
           {/* Create course button */}
           <Btn
             label="Create New Course"
-            color="#16a34a"
+            color="#059669"
             icon={<Plus size={18} color="#fff" style={{ marginRight: 6 }} />}
             onPress={() => setShowCreateForm(true)}
           />
@@ -320,7 +320,7 @@ const TutorCourseManager = ({ onClose }) => {
           {/* Course list */}
           {courses.length === 0 ? (
             <View style={s.emptyState}>
-              <FileText size={48} color="#d1d5db" />
+              <FileText size={48} color="#D5DCEA" />
               <Text style={s.emptyText}>You haven't created any courses yet</Text>
               <TouchableOpacity style={s.emptyBtn} onPress={() => setShowCreateForm(true)}>
                 <Text style={s.emptyBtnText}>Create Your First Course</Text>
@@ -347,20 +347,20 @@ const TutorCourseManager = ({ onClose }) => {
                     </View>
                     <Text style={s.courseDesc} numberOfLines={2}>{course.description}</Text>
                     <View style={s.tagRow}>
-                      <View style={[s.tag, { backgroundColor: '#dbeafe' }]}><Text style={[s.tagText, { color: '#1e40af' }]}>{course.category}</Text></View>
-                      <View style={[s.tag, { backgroundColor: '#ede9fe' }]}><Text style={[s.tagText, { color: '#5b21b6' }]}>{course.level}</Text></View>
-                      <View style={[s.tag, { backgroundColor: '#f3f4f6' }]}><Text style={[s.tagText, { color: '#374151' }]}>{course.total_students || 0} students</Text></View>
+                      <View style={[s.tag, { backgroundColor: '#E8EEFD' }]}><Text style={[s.tagText, { color: '#1E45C8' }]}>{course.category}</Text></View>
+                      <View style={[s.tag, { backgroundColor: '#E8EEFD' }]}><Text style={[s.tagText, { color: '#1E45C8' }]}>{course.level}</Text></View>
+                      <View style={[s.tag, { backgroundColor: '#F3F5FA' }]}><Text style={[s.tagText, { color: '#374151' }]}>{course.total_students || 0} students</Text></View>
                     </View>
                   </View>
                 </View>
 
                 <View style={s.actionRow}>
-                  <TouchableOpacity style={[s.actionBtn, { backgroundColor: '#2563eb', flex: 2 }]} onPress={() => setSelectedCourse(course)}>
+                  <TouchableOpacity style={[s.actionBtn, { backgroundColor: '#2F5BEA', flex: 2 }]} onPress={() => setSelectedCourse(course)}>
                     <FolderPlus size={15} color="#fff" />
                     <Text style={s.actionBtnText}>Manage Sections</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[s.actionBtn, { flex: 1.5, backgroundColor: course.published ? '#fef3c7' : '#16a34a' }]}
+                    style={[s.actionBtn, { flex: 1.5, backgroundColor: course.published ? '#fef3c7' : '#059669' }]}
                     onPress={() => handleTogglePublish(course)}
                   >
                     <Text style={[s.actionBtnText, { color: course.published ? '#92400e' : '#fff' }]}>
@@ -423,7 +423,7 @@ const TutorCourseManager = ({ onClose }) => {
             <ScrollView contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
               <Btn
                 label="Add New Section"
-                color="#16a34a"
+                color="#059669"
                 icon={<Plus size={16} color="#fff" style={{ marginRight: 6 }} />}
                 onPress={() => setShowSectionForm(true)}
               />
@@ -436,7 +436,7 @@ const TutorCourseManager = ({ onClose }) => {
                   <TextInput style={[s.input, s.textarea]} placeholder="Description (optional)" value={sectionForm.description} onChangeText={v => setSectionForm(f => ({ ...f, description: v }))} multiline numberOfLines={2} placeholderTextColor="#9ca3af" />
                   <TextInput style={[s.input, { width: 80 }]} placeholder="Order" value={String(sectionForm.order)} onChangeText={v => setSectionForm(f => ({ ...f, order: parseInt(v) || 0 }))} keyboardType="numeric" placeholderTextColor="#9ca3af" />
                   <View style={s.row}>
-                    <Btn label="Create Section" color="#16a34a" onPress={handleCreateSection} />
+                    <Btn label="Create Section" color="#059669" onPress={handleCreateSection} />
                     <TouchableOpacity style={s.cancelBtn} onPress={() => setShowSectionForm(false)}>
                       <Text style={s.cancelBtnText}>Cancel</Text>
                     </TouchableOpacity>
@@ -447,7 +447,7 @@ const TutorCourseManager = ({ onClose }) => {
               {/* Sections list */}
               {sections.length === 0 ? (
                 <View style={s.emptyState}>
-                  <FolderPlus size={40} color="#d1d5db" />
+                  <FolderPlus size={40} color="#D5DCEA" />
                   <Text style={s.emptyText}>No sections yet. Create one to start adding materials.</Text>
                 </View>
               ) : (
@@ -531,7 +531,7 @@ const TutorCourseManager = ({ onClose }) => {
 
                   <View style={s.row}>
                     <TouchableOpacity
-                      style={[s.btn, { flex: 1, backgroundColor: uploadingMaterial ? '#9ca3af' : '#16a34a' }]}
+                      style={[s.btn, { flex: 1, backgroundColor: uploadingMaterial ? '#9ca3af' : '#059669' }]}
                       onPress={handleUploadMaterial}
                       disabled={uploadingMaterial}
                     >
@@ -557,23 +557,23 @@ const TutorCourseManager = ({ onClose }) => {
 // ── styles ────────────────────────────────────────────────────────────────────
 
 const s = StyleSheet.create({
-  root:  { flex: 1, backgroundColor: '#f9fafb' },
+  root:  { flex: 1, backgroundColor: '#F6F8FC' },
   body:  { width: '100%', maxWidth: 760, alignSelf: 'center', padding: 16, paddingBottom: 40 },
 
   // header
-  header:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#2563eb', paddingHorizontal: 16, paddingVertical: 14 },
+  header:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#2F5BEA', paddingHorizontal: 16, paddingVertical: 14 },
   headerTitle:{ color: '#fff', fontSize: 20, fontWeight: 'bold' },
-  headerSub:  { color: '#bfdbfe', fontSize: 12 },
+  headerSub:  { color: '#BFD0FA', fontSize: 12 },
   closeBtn:   { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 20, padding: 6 },
 
   // modal header (white)
-  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#e5e7eb', backgroundColor: '#fff' },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: '#E6EAF2', backgroundColor: '#fff' },
   modalTitle:  { fontSize: 18, fontWeight: 'bold', color: '#111827' },
   modalSub:    { fontSize: 12, color: '#6b7280' },
 
   // overlay
   overlay:  { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center', padding: 16 },
-  loadCard: { backgroundColor: '#fff', borderRadius: 12, padding: 32, alignItems: 'center' },
+  loadCard: { backgroundColor: '#fff', borderRadius: 16, padding: 32, alignItems: 'center' },
   loadText: { color: '#6b7280', marginTop: 12 },
 
   uploadCard: { backgroundColor: '#fff', borderRadius: 16, overflow: 'hidden', width: '100%' },
@@ -581,26 +581,26 @@ const s = StyleSheet.create({
   // form fields
   fieldWrap: { marginBottom: 14 },
   label:     { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 4 },
-  input:     { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: '#111827', backgroundColor: '#fff' },
+  input:     { borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: '#111827', backgroundColor: '#fff' },
   textarea:  { minHeight: 72, textAlignVertical: 'top' },
 
   // pill picker
   pillRow:       { flexDirection: 'row', gap: 8, paddingVertical: 4 },
-  pill:          { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#d1d5db', backgroundColor: '#fff' },
-  pillActive:    { backgroundColor: '#2563eb', borderColor: '#2563eb' },
+  pill:          { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: '#D5DCEA', backgroundColor: '#fff' },
+  pillActive:    { backgroundColor: '#2F5BEA', borderColor: '#2F5BEA' },
   pillText:      { fontSize: 13, color: '#374151' },
   pillTextActive:{ color: '#fff', fontWeight: '600' },
 
   // buttons
-  btn:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#2563eb', borderRadius: 8, paddingVertical: 13, paddingHorizontal: 16, marginBottom: 12 },
+  btn:        { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: '#2F5BEA', borderRadius: 12, paddingVertical: 13, paddingHorizontal: 16, marginBottom: 12 },
   btnText:    { color: '#fff', fontWeight: '600', fontSize: 14 },
-  cancelBtn:  { borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, paddingVertical: 13, paddingHorizontal: 16, alignItems: 'center', marginBottom: 12, flex: 1 },
+  cancelBtn:  { borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 12, paddingVertical: 13, paddingHorizontal: 16, alignItems: 'center', marginBottom: 12, flex: 1 },
   cancelBtnText: { color: '#374151', fontWeight: '500' },
   row:        { flexDirection: 'row', gap: 10, marginTop: 8 },
   twoCol:     { flexDirection: 'row' },
 
   // course card
-  courseCard: { backgroundColor: '#fff', borderRadius: 10, marginBottom: 12, borderLeftWidth: 4, borderLeftColor: '#2563eb', shadowColor: '#000', shadowOpacity: 0.05, elevation: 2, overflow: 'hidden' },
+  courseCard: { backgroundColor: '#fff', borderRadius: 12, marginBottom: 12, borderLeftWidth: 4, borderLeftColor: '#2F5BEA', shadowColor: '#000', shadowOpacity: 0.05, elevation: 2, overflow: 'hidden' },
   courseRow:  { padding: 14 },
   titleRow:   { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6, marginBottom: 4 },
   courseTitle:{ fontSize: 15, fontWeight: 'bold', color: '#111827', flex: 1 },
@@ -610,48 +610,48 @@ const s = StyleSheet.create({
   tagText:    { fontSize: 11, fontWeight: '500' },
 
   // badges
-  badgeGreen:     { flexDirection: 'row', alignItems: 'center', backgroundColor: '#dcfce7', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
+  badgeGreen:     { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E6F7EF', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
   badgeGreenText: { color: '#166534', fontSize: 11, fontWeight: '600' },
   badgeYellow:    { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fef3c7', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 },
   badgeYellowText:{ color: '#92400e', fontSize: 11, fontWeight: '600' },
 
   // action row
-  actionRow:    { flexDirection: 'row', gap: 8, padding: 10, borderTopWidth: 1, borderTopColor: '#f3f4f6' },
-  actionBtn:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, borderRadius: 8, paddingVertical: 10 },
+  actionRow:    { flexDirection: 'row', gap: 8, padding: 10, borderTopWidth: 1, borderTopColor: '#F3F5FA' },
+  actionBtn:    { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, borderRadius: 12, paddingVertical: 10 },
   actionBtnText:{ color: '#fff', fontSize: 13, fontWeight: '600' },
 
   // section card
-  sectionCard:    { backgroundColor: '#f9fafb', borderRadius: 10, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#e5e7eb' },
+  sectionCard:    { backgroundColor: '#F6F8FC', borderRadius: 12, padding: 14, marginBottom: 12, borderWidth: 1, borderColor: '#E6EAF2' },
   sectionRow:     { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 8 },
   sectionTitle:   { fontSize: 14, fontWeight: 'bold', color: '#111827' },
   sectionDesc:    { fontSize: 12, color: '#6b7280', marginTop: 2 },
   sectionMeta:    { fontSize: 11, color: '#9ca3af', marginTop: 4 },
-  deleteIconBtn:  { padding: 6, backgroundColor: '#fee2e2', borderRadius: 6 },
+  deleteIconBtn:  { padding: 6, backgroundColor: '#fee2e2', borderRadius: 10 },
 
   // section form
-  sectionFormBox:   { backgroundColor: '#eff6ff', borderRadius: 10, padding: 14, marginBottom: 14, borderWidth: 2, borderColor: '#bfdbfe', gap: 10 },
-  sectionFormTitle: { fontSize: 14, fontWeight: 'bold', color: '#1e40af' },
+  sectionFormBox:   { backgroundColor: '#E8EEFD', borderRadius: 12, padding: 14, marginBottom: 14, borderWidth: 2, borderColor: '#BFD0FA', gap: 10 },
+  sectionFormTitle: { fontSize: 14, fontWeight: 'bold', color: '#1E45C8' },
 
   // material row
-  materialRow:  { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, padding: 10, marginBottom: 6, borderWidth: 1, borderColor: '#e5e7eb', gap: 10 },
-  matIconWrap:  { backgroundColor: '#f3f4f6', padding: 8, borderRadius: 6 },
+  materialRow:  { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 12, padding: 10, marginBottom: 6, borderWidth: 1, borderColor: '#E6EAF2', gap: 10 },
+  matIconWrap:  { backgroundColor: '#F3F5FA', padding: 8, borderRadius: 10 },
   matTitle:     { fontSize: 13, fontWeight: '500', color: '#111827' },
   matType:      { fontSize: 11, color: '#6b7280', textTransform: 'capitalize' },
   matDur:       { fontSize: 11, color: '#6b7280' },
 
   // upload section btn
-  uploadSectionBtn:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#7c3aed', borderRadius: 8, paddingVertical: 10, marginTop: 10 },
+  uploadSectionBtn:     { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: '#2F5BEA', borderRadius: 12, paddingVertical: 10, marginTop: 10 },
   uploadSectionBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
 
   // file picker
-  filePicker:     { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, padding: 12, backgroundColor: '#f9fafb' },
+  filePicker:     { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 12, padding: 12, backgroundColor: '#F6F8FC' },
   filePickerText: { fontSize: 13, color: '#6b7280', flex: 1 },
   fileHint:       { fontSize: 11, color: '#9ca3af', marginTop: 4 },
 
   // empty state
   emptyState: { alignItems: 'center', paddingVertical: 40, gap: 10 },
   emptyText:  { color: '#9ca3af', fontSize: 14, textAlign: 'center' },
-  emptyBtn:   { backgroundColor: '#2563eb', borderRadius: 8, paddingHorizontal: 20, paddingVertical: 10 },
+  emptyBtn:   { backgroundColor: '#2F5BEA', borderRadius: 12, paddingHorizontal: 20, paddingVertical: 10 },
   emptyBtnText:{ color: '#fff', fontWeight: '600' },
 });
 

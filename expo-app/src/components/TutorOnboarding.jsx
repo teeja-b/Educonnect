@@ -151,7 +151,7 @@ const TutorOnboarding = ({ onComplete, onSkip, visible = true }) => {
   const renderStep1 = () => (
     <View style={styles.stepContent}>
       <View style={styles.stepHeading}>
-        <Icon name="book-open" size={32} color="#16A34A" />
+        <Icon name="book-open" size={32} color="#059669" />
         <View>
           <Text style={styles.stepTitle}>Your Expertise</Text>
           <Text style={styles.stepSubtitle}>What subjects can you teach?</Text>
@@ -191,7 +191,7 @@ const TutorOnboarding = ({ onComplete, onSkip, visible = true }) => {
   const renderStep2 = () => (
     <View style={styles.stepContent}>
       <View style={styles.stepHeading}>
-        <Icon name="user" size={32} color="#16A34A" />
+        <Icon name="user" size={32} color="#059669" />
         <View>
           <Text style={styles.stepTitle}>Your Bio</Text>
           <Text style={styles.stepSubtitle}>Tell students about yourself</Text>
@@ -263,7 +263,7 @@ const TutorOnboarding = ({ onComplete, onSkip, visible = true }) => {
   const renderStep3 = () => (
     <View style={styles.stepContent}>
       <View style={styles.stepHeading}>
-        <Icon name="dollar-sign" size={32} color="#16A34A" />
+        <Icon name="dollar-sign" size={32} color="#059669" />
         <View>
           <Text style={styles.stepTitle}>Set Your Rate</Text>
           <Text style={styles.stepSubtitle}>How much do you charge per hour?</Text>
@@ -322,7 +322,7 @@ const TutorOnboarding = ({ onComplete, onSkip, visible = true }) => {
   const renderStep4 = () => (
     <View style={styles.stepContent}>
       <View style={styles.stepHeading}>
-        <Icon name="globe" size={32} color="#16A34A" />
+        <Icon name="globe" size={32} color="#059669" />
         <View>
           <Text style={styles.stepTitle}>Languages</Text>
           <Text style={styles.stepSubtitle}>What languages can you teach in?</Text>
@@ -362,7 +362,7 @@ const TutorOnboarding = ({ onComplete, onSkip, visible = true }) => {
   const renderStep5 = () => (
     <View style={styles.stepContent}>
       <View style={styles.stepHeading}>
-        <Icon name="clock" size={32} color="#16A34A" />
+        <Icon name="clock" size={32} color="#059669" />
         <View>
           <Text style={styles.stepTitle}>Availability</Text>
           <Text style={styles.stepSubtitle}>When are you available to teach?</Text>
@@ -487,12 +487,12 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   flex: { flex: 1 },
   genderRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
-genderChip: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 10, borderWidth: 1.5, borderColor: '#D1D5DB', backgroundColor: '#F9FAFB' },
-genderChipActive: { borderColor: '#16A34A', backgroundColor: '#DCFCE7' },
+genderChip: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, borderWidth: 1.5, borderColor: '#D5DCEA', backgroundColor: '#F6F8FC' },
+genderChipActive: { borderColor: '#059669', backgroundColor: '#E6F7EF' },
 genderChipText: { fontSize: 13, color: '#374151', fontWeight: '500' },
 genderChipTextActive: { color: '#14532D', fontWeight: '600' },
 fieldHint: { fontSize: 12, color: '#9CA3AF', marginTop: 2, marginBottom: 4 },
-  modalHeader: { backgroundColor: '#16A34A', paddingHorizontal: 16, paddingVertical: 14 },
+  modalHeader: { backgroundColor: '#059669', paddingHorizontal: 16, paddingVertical: 14 },
   modalHeaderTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   modalTitle: { color: '#fff', fontWeight: '700', fontSize: 18, flex: 1 },
   autoSaveBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
@@ -505,69 +505,69 @@ fieldHint: { fontSize: 12, color: '#9CA3AF', marginTop: 2, marginBottom: 4 },
   scrollContent: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: 16, paddingBottom: 24 },
   stepContent: { gap: 16 },
   stepHeading: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 4 },
-  stepTitle: { fontSize: 20, fontWeight: '700', color: '#1F2937' },
+  stepTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
   stepSubtitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
 
   inputRow: { flexDirection: 'row', gap: 8 },
-  tagInput: { flex: 1, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: '#1F2937', backgroundColor: '#F9FAFB' },
-  addBtn: { backgroundColor: '#16A34A', paddingHorizontal: 18, borderRadius: 10, justifyContent: 'center' },
+  tagInput: { flex: 1, borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: '#111827', backgroundColor: '#F6F8FC' },
+  addBtn: { backgroundColor: '#059669', paddingHorizontal: 18, borderRadius: 12, justifyContent: 'center' },
   addBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
 
   tagList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, minHeight: 44 },
-  tag: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#DCFCE7', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 99 },
+  tag: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#E6F7EF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 99 },
   tagText: { color: '#14532D', fontSize: 13, fontWeight: '500' },
-  tagBlue: { backgroundColor: '#DBEAFE' },
-  tagTextBlue: { color: '#1D4ED8' },
+  tagBlue: { backgroundColor: '#E8EEFD' },
+  tagTextBlue: { color: '#1E45C8' },
   tagRemove: { color: '#374151', fontSize: 18, fontWeight: '700', lineHeight: 20 },
   tagEmpty: { color: '#9CA3AF', fontStyle: 'italic', fontSize: 13 },
 
-  tipBox: { backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FDE68A', borderRadius: 10, padding: 12 },
+  tipBox: { backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FDE68A', borderRadius: 12, padding: 12 },
   tipText: { fontSize: 13, color: '#92400E' },
 
-  bioInput: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 10, padding: 12, fontSize: 14, color: '#1F2937', minHeight: 130, textAlignVertical: 'top', backgroundColor: '#F9FAFB' },
+  bioInput: { borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 10, padding: 12, fontSize: 14, color: '#111827', minHeight: 130, textAlignVertical: 'top', backgroundColor: '#F6F8FC' },
   charCount: { fontSize: 12, color: '#9CA3AF', textAlign: 'right' },
   fieldBlock: { gap: 6 },
   fieldLabel: { fontSize: 13, fontWeight: '600', color: '#374151' },
-  input: { borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: '#1F2937', backgroundColor: '#F9FAFB' },
+  input: { borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: '#111827', backgroundColor: '#F6F8FC' },
   textarea: { minHeight: 72, textAlignVertical: 'top' },
   sectionLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 4 },
 
-  rateInputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: '#16A34A', borderRadius: 12, overflow: 'hidden', backgroundColor: '#F0FDF4' },
-  rateCurrency: { paddingHorizontal: 14, fontSize: 24, fontWeight: '700', color: '#16A34A' },
-  rateInput: { flex: 1, fontSize: 28, fontWeight: '700', color: '#1F2937', paddingVertical: 10 },
-  rateUnit: { paddingHorizontal: 14, fontSize: 16, color: '#16A34A', fontWeight: '600' },
+  rateInputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: '#059669', borderRadius: 16, overflow: 'hidden', backgroundColor: '#E6F7EF' },
+  rateCurrency: { paddingHorizontal: 14, fontSize: 24, fontWeight: '700', color: '#059669' },
+  rateInput: { flex: 1, fontSize: 28, fontWeight: '700', color: '#111827', paddingVertical: 10 },
+  rateUnit: { paddingHorizontal: 14, fontSize: 16, color: '#059669', fontWeight: '600' },
 
-  rateSuggestion: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, backgroundColor: '#fff', borderRadius: 10, borderWidth: 1, borderColor: '#E5E7EB', marginBottom: 6 },
+  rateSuggestion: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E6EAF2', marginBottom: 6 },
   rateSuggestionLevel: { color: '#374151', fontSize: 14 },
-  rateSuggestionRate: { color: '#16A34A', fontWeight: '700', fontSize: 14 },
+  rateSuggestionRate: { color: '#059669', fontWeight: '700', fontSize: 14 },
 
   optionCol: { gap: 6 },
-  optionRow: { padding: 12, borderRadius: 10, borderWidth: 1.5, borderColor: '#D1D5DB', backgroundColor: '#F9FAFB' },
-  optionRowActive: { borderColor: '#16A34A', backgroundColor: '#F0FDF4' },
+  optionRow: { padding: 12, borderRadius: 12, borderWidth: 1.5, borderColor: '#D5DCEA', backgroundColor: '#F6F8FC' },
+  optionRowActive: { borderColor: '#059669', backgroundColor: '#E6F7EF' },
   optionText: { fontSize: 13, color: '#374151' },
   optionTextActive: { color: '#14532D', fontWeight: '600' },
 
   availGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  availCard: { width: '46%', padding: 16, borderRadius: 12, borderWidth: 2, borderColor: '#E5E7EB', backgroundColor: '#F9FAFB', alignItems: 'center' },
-  availCardActive: { borderColor: '#16A34A', backgroundColor: '#DCFCE7' },
+  availCard: { width: '46%', padding: 16, borderRadius: 16, borderWidth: 2, borderColor: '#E6EAF2', backgroundColor: '#F6F8FC', alignItems: 'center' },
+  availCardActive: { borderColor: '#059669', backgroundColor: '#E6F7EF' },
   availEmoji: { fontSize: 28, marginBottom: 6 },
   availLabel: { fontSize: 14, fontWeight: '600', color: '#4B5563' },
   availLabelActive: { color: '#14532D' },
 
-  summaryBox: { backgroundColor: '#F0FDF4', borderWidth: 1, borderColor: '#BBF7D0', borderRadius: 12, padding: 14, marginTop: 8 },
+  summaryBox: { backgroundColor: '#E6F7EF', borderWidth: 1, borderColor: '#BBF7D0', borderRadius: 16, padding: 14, marginTop: 8 },
   summaryTitle: { fontWeight: '700', color: '#14532D', fontSize: 14, marginBottom: 8 },
   summaryLine: { fontSize: 13, color: '#166534', marginBottom: 4 },
 
-  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#F3F4F6', backgroundColor: '#F9FAFB' },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#F3F5FA', backgroundColor: '#F6F8FC' },
   footerLeft: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  backBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, borderRadius: 10, borderWidth: 1, borderColor: '#D1D5DB', gap: 4 },
+  backBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: '#D5DCEA', gap: 4 },
   backBtnText: { fontSize: 14, color: '#374151' },
   skipBtn: { paddingHorizontal: 12, paddingVertical: 10 },
   skipBtnText: { fontSize: 14, color: '#6B7280' },
-  nextBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#16A34A', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 10 },
+  nextBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#059669', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 },
   nextBtnDisabled: { opacity: 0.4 },
   nextBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  completeBtn: { backgroundColor: '#16A34A', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 10, alignItems: 'center', minWidth: 150 },
+  completeBtn: { backgroundColor: '#059669', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, alignItems: 'center', minWidth: 150 },
 });
 
 export default TutorOnboarding;

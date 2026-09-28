@@ -67,7 +67,7 @@ export default function PasswordResetPage({ onClose }) {
               <X size={20} color="#6b7280" />
             </TouchableOpacity>
             <View style={styles.successIcon}>
-              <CheckCircle size={32} color="#16a34a" />
+              <CheckCircle size={32} color="#059669" />
             </View>
             <Text style={styles.successTitle}>Password Changed!</Text>
             <Text style={styles.successSub}>Your password has been successfully updated.</Text>
@@ -86,7 +86,7 @@ export default function PasswordResetPage({ onClose }) {
           </TouchableOpacity>
 
           <View style={styles.iconWrap}>
-            <Lock size={32} color="#2563eb" />
+            <Lock size={32} color="#2F5BEA" />
           </View>
           <Text style={styles.title}>Change Password</Text>
           <Text style={styles.sub}>Enter your current and new password</Text>
@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   },
   closeBtn: { position: 'absolute', top: 16, right: 16, padding: 8 },
   iconWrap: {
-    width: 64, height: 64, borderRadius: 32, backgroundColor: '#dbeafe',
+    width: 64, height: 64, borderRadius: 32, backgroundColor: '#E8EEFD',
     alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 12,
   },
   title: { fontSize: 22, fontWeight: 'bold', color: '#111827', textAlign: 'center' },
@@ -195,34 +195,34 @@ const styles = StyleSheet.create({
   label: { fontSize: 13, fontWeight: '500', color: '#374151', marginBottom: 6, marginTop: 12 },
   inputRow: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderWidth: 1, borderColor: '#d1d5db', borderRadius: 10,
-    paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#f9fafb',
+    borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 12,
+    paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#F6F8FC',
   },
   input: { flex: 1, fontSize: 14, color: '#111827' },
   hint: { fontSize: 11, color: '#9ca3af', marginTop: 4 },
   strengthWrap: { marginTop: 8 },
   strengthBars: { flexDirection: 'row', gap: 6, marginBottom: 4 },
-  bar: { flex: 1, height: 6, borderRadius: 3, backgroundColor: '#e5e7eb' },
-  barGreen: { backgroundColor: '#16a34a' },
+  bar: { flex: 1, height: 6, borderRadius: 3, backgroundColor: '#E6EAF2' },
+  barGreen: { backgroundColor: '#059669' },
   strengthLabel: { fontSize: 11, color: '#6b7280' },
   errorBox: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fca5a5',
-    borderRadius: 10, padding: 12, marginTop: 12,
+    borderRadius: 12, padding: 12, marginTop: 12,
   },
   errorText: { color: '#dc2626', fontSize: 13, flex: 1 },
   submitBtn: {
-    backgroundColor: '#2563eb', borderRadius: 10,
+    backgroundColor: '#2F5BEA', borderRadius: 12,
     paddingVertical: 14, alignItems: 'center', marginTop: 16,
   },
   submitBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
   cancelBtn: {
-    backgroundColor: '#f3f4f6', borderRadius: 10,
+    backgroundColor: '#F3F5FA', borderRadius: 12,
     paddingVertical: 10, alignItems: 'center', marginTop: 10, marginBottom: 16,
   },
   cancelText: { color: '#374151', fontSize: 14 },
   successIcon: {
-    width: 64, height: 64, borderRadius: 32, backgroundColor: '#dcfce7',
+    width: 64, height: 64, borderRadius: 32, backgroundColor: '#E6F7EF',
     alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 16,
   },
   successTitle: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', color: '#111827', marginBottom: 8 },

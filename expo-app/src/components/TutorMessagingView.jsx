@@ -512,7 +512,7 @@ const TutorMessagingView = ({
                 </View>
 
                 {loading ? (
-                    <View style={styles.loadingCenter}><ActivityIndicator color="#2563EB" /></View>
+                    <View style={styles.loadingCenter}><ActivityIndicator color="#2F5BEA" /></View>
                 ) : (
                     <FlatList
                         data={filteredConversations}
@@ -520,7 +520,7 @@ const TutorMessagingView = ({
                         contentContainerStyle={styles.convList}
                         ListEmptyComponent={
                             <View style={styles.emptyState}>
-                                <Icon name="message-square" size={36} color="#D1D5DB" />
+                                <Icon name="message-square" size={36} color="#D5DCEA" />
                                 <Text style={styles.emptyText}>No conversations yet</Text>
                                 <Text style={styles.emptySubtext}>Students will appear here when they message you</Text>
                             </View>
@@ -531,7 +531,7 @@ const TutorMessagingView = ({
                             return (
                                 <TouchableOpacity style={styles.convRow} onPress={() => openConversation(conv)}>
                                     <View style={styles.convAvatar}>
-                                        <Icon name="user" size={20} color="#2563EB" />
+                                        <Icon name="user" size={20} color="#2F5BEA" />
                                         {isOnline && <View style={styles.onlineDot} />}
                                     </View>
                                     <View style={styles.convInfo}>
@@ -662,7 +662,7 @@ const TutorMessagingView = ({
 
                 {/* ── Messages ── */}
                 {loading ? (
-                    <View style={styles.loadingCenter}><ActivityIndicator color="#2563EB" /></View>
+                    <View style={styles.loadingCenter}><ActivityIndicator color="#2F5BEA" /></View>
                 ) : (
                     <FlatList
                         ref={flatListRef}
@@ -672,7 +672,7 @@ const TutorMessagingView = ({
                         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
                         ListEmptyComponent={
                             <View style={styles.emptyChat}>
-                                <Icon name="message-square" size={36} color="#D1D5DB" />
+                                <Icon name="message-square" size={36} color="#D5DCEA" />
                                 <Text style={styles.emptyText}>No messages yet</Text>
                             </View>
                         }
@@ -739,36 +739,36 @@ const TutorMessagingView = ({
 
 // ─── styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-    container: { flex: 1, width: '100%', maxWidth: 820, alignSelf: 'center', backgroundColor: '#F9FAFB' },
+    container: { flex: 1, width: '100%', maxWidth: 820, alignSelf: 'center', backgroundColor: '#F6F8FC' },
     flex: { flex: 1 },
     loadingCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
     listHeader: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
         paddingHorizontal: 16, paddingVertical: 12,
-        backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F4F6',
+        backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F5FA',
     },
-    listTitle: { fontSize: 18, fontWeight: '700', color: '#1F2937' },
+    listTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
     tutorNameLabel: { fontSize: 12, color: '#6B7280', marginTop: 2 },
     statusDot: { width: 10, height: 10, borderRadius: 99 },
 
     searchBar: {
         flexDirection: 'row', alignItems: 'center', gap: 8,
         marginHorizontal: 12, marginVertical: 10,
-        backgroundColor: '#F3F4F6', borderRadius: 10,
+        backgroundColor: '#F3F5FA', borderRadius: 12,
         paddingHorizontal: 12, paddingVertical: 8,
     },
-    searchInput: { flex: 1, fontSize: 14, color: '#1F2937' },
+    searchInput: { flex: 1, fontSize: 14, color: '#111827' },
 
     convList: { paddingHorizontal: 0, paddingBottom: 20 },
     convRow: {
         flexDirection: 'row', alignItems: 'center', gap: 10,
         paddingHorizontal: 14, paddingVertical: 12,
-        backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F9FAFB',
+        backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F6F8FC',
     },
     convAvatar: {
         width: 42, height: 42, borderRadius: 21,
-        backgroundColor: '#DBEAFE', alignItems: 'center', justifyContent: 'center',
+        backgroundColor: '#E8EEFD', alignItems: 'center', justifyContent: 'center',
         position: 'relative', flexShrink: 0,
     },
     onlineDot: {
@@ -778,23 +778,23 @@ const styles = StyleSheet.create({
     },
     convInfo: { flex: 1, minWidth: 0 },
     convInfoTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-    convName: { fontWeight: '600', fontSize: 14, color: '#1F2937', flexShrink: 1 },
+    convName: { fontWeight: '600', fontSize: 14, color: '#111827', flexShrink: 1 },
     convTime: { fontSize: 11, color: '#9CA3AF', flexShrink: 0, marginLeft: 6 },
     convLastMsg: { fontSize: 12, color: '#6B7280', marginTop: 2 },
     unreadBadge: {
-        backgroundColor: '#2563EB', width: 20, height: 20, borderRadius: 10,
+        backgroundColor: '#2F5BEA', width: 20, height: 20, borderRadius: 10,
         alignItems: 'center', justifyContent: 'center', flexShrink: 0,
     },
     unreadText: { color: '#fff', fontSize: 11, fontWeight: '700' },
 
     emptyState: { alignItems: 'center', paddingVertical: 60 },
     emptyText: { color: '#9CA3AF', fontSize: 14, marginTop: 10 },
-    emptySubtext: { color: '#D1D5DB', fontSize: 12, marginTop: 4, textAlign: 'center', paddingHorizontal: 30 },
+    emptySubtext: { color: '#D5DCEA', fontSize: 12, marginTop: 4, textAlign: 'center', paddingHorizontal: 30 },
 
     chatHeader: {
         flexDirection: 'row', alignItems: 'center', gap: 8,
         paddingHorizontal: 12, paddingVertical: 10,
-        backgroundColor: '#2563EB',
+        backgroundColor: '#2F5BEA',
     },
     backBtn: { padding: 4, flexShrink: 0 },
     chatAvatar: {
@@ -806,11 +806,11 @@ const styles = StyleSheet.create({
     onlineDotChat: {
         position: 'absolute', bottom: 0, right: 0,
         width: 10, height: 10, borderRadius: 5,
-        backgroundColor: '#4ADE80', borderWidth: 2, borderColor: '#2563EB',
+        backgroundColor: '#4ADE80', borderWidth: 2, borderColor: '#2F5BEA',
     },
     chatHeaderInfo: { flex: 1, minWidth: 0 },
     chatHeaderName: { color: '#fff', fontWeight: '600', fontSize: 15 },
-    chatHeaderStatus: { color: '#BFDBFE', fontSize: 11, marginTop: 1 },
+    chatHeaderStatus: { color: '#BFD0FA', fontSize: 11, marginTop: 1 },
 
     countdownBadge: {
         flexDirection: 'row', alignItems: 'center', gap: 4,
@@ -832,7 +832,7 @@ const styles = StyleSheet.create({
     expiredBannerSub: { fontSize: 11, color: '#b45309', marginTop: 1 },
     reopenBtn: {
         flexDirection: 'row', alignItems: 'center', gap: 5,
-        backgroundColor: '#2563eb', borderRadius: 10,
+        backgroundColor: '#2F5BEA', borderRadius: 12,
         paddingHorizontal: 14, paddingVertical: 8,
         marginLeft: 10, flexShrink: 0,
     },
@@ -853,11 +853,11 @@ const styles = StyleSheet.create({
     rowLeft: { alignItems: 'flex-start' },
     rowRight: { alignItems: 'flex-end' },
     bubble: { maxWidth: '78%', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 18 },
-    ownBubble: { backgroundColor: '#2563EB', borderBottomRightRadius: 4 },
-    theirBubble: { backgroundColor: '#fff', borderBottomLeftRadius: 4, borderWidth: 1, borderColor: '#E5E7EB' },
+    ownBubble: { backgroundColor: '#2F5BEA', borderBottomRightRadius: 4 },
+    theirBubble: { backgroundColor: '#fff', borderBottomLeftRadius: 4, borderWidth: 1, borderColor: '#E6EAF2' },
     bubbleText: { fontSize: 14, lineHeight: 19 },
     ownText: { color: '#fff' },
-    theirText: { color: '#1F2937' },
+    theirText: { color: '#111827' },
     bubbleMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4, marginTop: 3 },
     bubbleTime: { fontSize: 11 },
     ownMeta: { color: 'rgba(255,255,255,0.7)' },
@@ -867,12 +867,12 @@ const styles = StyleSheet.create({
     typingDots: { color: '#6B7280', fontSize: 16, letterSpacing: 3 },
 
     inputBar: {
-        backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E5E7EB',
+        backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E6EAF2',
         paddingHorizontal: 12, paddingVertical: 8,
     },
     attachPreview: {
         flexDirection: 'row', alignItems: 'center', gap: 6,
-        backgroundColor: '#F3F4F6', borderRadius: 8,
+        backgroundColor: '#F3F5FA', borderRadius: 12,
         paddingHorizontal: 10, paddingVertical: 6, marginBottom: 6,
     },
     attachName: { flex: 1, fontSize: 12, color: '#374151' },
@@ -880,10 +880,10 @@ const styles = StyleSheet.create({
     inputIconBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
     recordingActive: { backgroundColor: '#EF4444' },
     textInput: {
-        flex: 1, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 20,
-        paddingHorizontal: 14, paddingVertical: 8, fontSize: 14, color: '#1F2937', maxHeight: 100,
+        flex: 1, borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 20,
+        paddingHorizontal: 14, paddingVertical: 8, fontSize: 14, color: '#111827', maxHeight: 100,
     },
-    sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center' },
+    sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#2F5BEA', alignItems: 'center', justifyContent: 'center' },
     sendBtnDisabled: { opacity: 0.4 },
 });
 

@@ -3,17 +3,27 @@
 import {
     AlertCircle,
     BookOpen,
+    Brain,
+    Calendar,
     CheckCircle,
+    ChevronLeft,
+    ChevronRight,
+    Clock,
     FileText,
     GraduationCap,
+    Home,
     Lock, LogOut,
     Menu,
     MessageSquare,
     Phone, PhoneOff,
     Search,
+    Sparkles,
+    TrendingUp,
+    User,
     Users,
     Video,
-    X
+    X,
+    Zap
 } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
@@ -33,6 +43,10 @@ import Notifications from "./notifications";
 import { initializeFCM, playRingtone, registerNotificationHandler, stopRingtone } from './firebaseConfig';
 import { API_URL } from './utils/config';
 import { storage } from './utils/storage';
+import {
+    Avatar, Button, Card, EmptyState, InfoTile, PAGE_WIDTH, Pill, SectionDivider, TileGrid,
+    colors, font, radius, shadow, ui,
+} from './theme';
 // ── Lazy-loaded screens (modal-style) ──────────────────────────────────────
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AITutorMatcher from './components/AITutorMatch';
@@ -51,7 +65,6 @@ import TutorProfile from './components/TutorProfile';
 // ── Web width limit ─────────────────────────────────────────────────────────
 // Content is capped at PAGE_WIDTH on the web so it doesn't stretch across
 // wide screens. On phones these have no effect.
-const PAGE_WIDTH = 760;
 // Side padding that lines a full-width bar's contents up with the centred page.
 const gutter = (inner = 16) =>
     Platform.OS === 'web'
@@ -105,6 +118,43 @@ const EduConnectApp = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [aiMatching, setAiMatching] = useState(false);
     const [studentProfileForMatching, setStudentProfileForMatching] = useState(null);
+    const [dashProfile, setDashProfile] = useState(null);   // student survey profile for the home card
+    const [userName, setUserName] = useState('');
+
+    // ── Load Inter on the web ────────────────────────────────────────────────
+    useEffect(() => {
+        if (Platform.OS !== 'web' || typeof document === 'undefined') return;
+        if (document.getElementById('inter-font')) return;
+        const link = document.createElement('link');
+        link.id = 'inter-font';
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap';
+        document.head.appendChild(link);
+    }, []);
+
+    // ── Name + student profile for the home screen ───────────────────────────
+    const loadDashProfile = useCallback(async () => {
+        try {
+            const u = await storage.getItem('user');
+            const parsed = u ? JSON.parse(u) : null;
+            setUserName(parsed?.full_name || (await storage.getItem('userName')) || '');
+            if ((parsed?.user_type || (await storage.getItem('userType'))) !== 'student') return;
+            const token = await storage.getItem('token');
+            const res = await fetch(`${API_URL}/api/student/profile`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            setDashProfile(data.profile || null);
+        } catch (e) {
+            console.log('Could not load profile for home:', e);
+        }
+    }, []);
+
+    useEffect(() => {
+        if (!isAuthenticated) { setDashProfile(null); setUserName(''); return; }
+        loadDashProfile();
+    }, [isAuthenticated, userType, loadDashProfile]);
 
     // ── Auth init from storage ───────────────────────────────────────────────
     useEffect(() => {
@@ -398,29 +448,31 @@ const EduConnectApp = () => {
     const NavBar = () => (
         <View style={[styles.navbar, { paddingTop: insets.top }]}>
             <View style={styles.navRow}>
-                <TouchableOpacity style={styles.navLogo} onPress={() => setCurrentView('home')}>
-                    <GraduationCap size={24} color="#fff" />
+                <TouchableOpacity style={styles.navLogo} onPress={() => { setCurrentView('home'); setMenuOpen(false); }}>
+                    <View style={styles.logoMark}>
+                        <GraduationCap size={18} color="#fff" strokeWidth={2.2} />
+                    </View>
                     <Text style={styles.navTitle}>EduConnect</Text>
                 </TouchableOpacity>
 
                 <View style={styles.navActions}>
                     {!isAuthenticated ? (
                         <>
-                            <TouchableOpacity style={styles.btnOutline} onPress={() => setShowLogin(true)}>
-                                <Text style={styles.btnOutlineText}>Login</Text>
+                            <TouchableOpacity style={styles.navGhostBtn} onPress={() => setShowLogin(true)}>
+                                <Text style={styles.navGhostText}>Log in</Text>
                             </TouchableOpacity>
-                            <TouchableOpacity style={styles.btnWhite} onPress={() => setShowRegister(true)}>
-                                <Text style={styles.btnWhiteText}>Sign Up</Text>
+                            <TouchableOpacity style={styles.navPrimaryBtn} onPress={() => setShowRegister(true)}>
+                                <Text style={styles.navPrimaryText}>Sign up</Text>
                             </TouchableOpacity>
                         </>
                     ) : (
                         <>
-                            <View style={styles.onlineBadge}>
+                            <View style={styles.rolePill}>
                                 <View style={styles.greenDot} />
-                                <Text style={styles.onlineBadgeText}>{userType || 'User'}</Text>
+                                <Text style={styles.rolePillText}>{userType || 'User'}</Text>
                             </View>
                             <TouchableOpacity onPress={() => setMenuOpen((v) => !v)} style={styles.menuBtn}>
-                                {menuOpen ? <X size={24} color="#fff" /> : <Menu size={24} color="#fff" />}
+                                {menuOpen ? <X size={20} color={colors.text} /> : <Menu size={20} color={colors.text} />}
                             </TouchableOpacity>
                         </>
                     )}
@@ -428,34 +480,38 @@ const EduConnectApp = () => {
             </View>
 
             {menuOpen && isAuthenticated && (
-                <View style={styles.dropdown}>
-                    <MenuItem icon={<BookOpen size={20} color="#fff" />} label="Home" onPress={() => { setCurrentView('home'); setMenuOpen(false); }} />
-                    {userType === 'student' && (
-                        <>
-                            <MenuItem icon={<FileText size={20} color="#fff" />} label="Courses" onPress={() => { setCurrentView('courses'); setMenuOpen(false); }} />
-                            <MenuItem icon={<BookOpen size={20} color="#fff" />} label="My Courses" onPress={() => { setCurrentView('my-courses'); setMenuOpen(false); }} />
-                            <MenuItem icon={<Users size={20} color="#fff" />} label="Find Tutors" onPress={() => { setCurrentView('tutors'); setMenuOpen(false); }} />
-                        </>
-                    )}
-                    {userType === 'tutor' && (
-                        <MenuItem icon={<BookOpen size={20} color="#fff" />} label="Manage Courses" onPress={() => { setShowCourseManager(true); setMenuOpen(false); }} />
-                    )}
-                    <View style={styles.divider} />
-                    <MenuItem icon={<Users size={20} color="#fff" />} label="My Profile" onPress={() => {
-                        userType === 'student' ? setShowStudentProfile(true) : setShowTutorProfile(true);
-                        setMenuOpen(false);
-                    }} />
-                    <MenuItem icon={<Lock size={20} color="#fff" />} label="Change Password" onPress={() => { setShowPasswordReset(true); setMenuOpen(false); }} />
-                    <MenuItem icon={<LogOut size={20} color="#ef4444" />} label="Logout" onPress={() => { setMenuOpen(false); handleLogout(); }} textStyle={{ color: '#fca5a5' }} />
+                <View style={styles.dropdownWrap}>
+                    <View style={styles.dropdown}>
+                        <MenuItem icon={Home} label="Home" onPress={() => { setCurrentView('home'); setMenuOpen(false); }} />
+                        {userType === 'student' && (
+                            <>
+                                <MenuItem icon={FileText} label="Courses" onPress={() => { setCurrentView('courses'); setMenuOpen(false); }} />
+                                <MenuItem icon={BookOpen} label="My courses" onPress={() => { setCurrentView('my-courses'); setMenuOpen(false); }} />
+                                <MenuItem icon={Sparkles} label="Find tutors" onPress={() => { setMenuOpen(false); handleAIMatching(); }} />
+                            </>
+                        )}
+                        {userType === 'tutor' && (
+                            <MenuItem icon={BookOpen} label="Manage courses" onPress={() => { setShowCourseManager(true); setMenuOpen(false); }} />
+                        )}
+                        <View style={styles.divider} />
+                        <MenuItem icon={User} label="My profile" onPress={() => {
+                            userType === 'student' ? setShowStudentProfile(true) : setShowTutorProfile(true);
+                            setMenuOpen(false);
+                        }} />
+                        <MenuItem icon={Lock} label="Change password" onPress={() => { setShowPasswordReset(true); setMenuOpen(false); }} />
+                        <MenuItem icon={LogOut} label="Log out" danger onPress={() => { setMenuOpen(false); handleLogout(); }} />
+                    </View>
                 </View>
             )}
         </View>
     );
 
-    const MenuItem = ({ icon, label, onPress, textStyle }) => (
+    const MenuItem = ({ icon: Icon, label, onPress, danger }) => (
         <TouchableOpacity style={styles.menuItem} onPress={onPress}>
-            {icon}
-            <Text style={[styles.menuItemText, textStyle]}>{label}</Text>
+            <View style={[styles.menuIcon, danger && { backgroundColor: colors.dangerSoft }]}>
+                <Icon size={17} color={danger ? colors.danger : colors.primary} strokeWidth={2} />
+            </View>
+            <Text style={[styles.menuItemText, danger && { color: colors.danger }]}>{label}</Text>
         </TouchableOpacity>
     );
 
@@ -463,37 +519,31 @@ const EduConnectApp = () => {
 
     const BottomTabBar = () => {
         if (!isAuthenticated) return null;
-        const tab = (view, icon, label) => {
-            const active = currentView === view;
-            const Icon = icon;
-            return (
-                <TouchableOpacity
-                    key={view}
-                    style={styles.tabBtn}
-                    onPress={() => setCurrentView(view)}
-                >
-                    <Icon size={24} color={active ? '#2563eb' : '#6b7280'} />
-                    <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{label}</Text>
-                </TouchableOpacity>
-            );
-        };
+        const TabButton = ({ active, icon: Icon, label, onPress }) => (
+            <TouchableOpacity style={styles.tabBtn} onPress={onPress}>
+                <View style={[styles.tabIconWrap, active && styles.tabIconWrapActive]}>
+                    <Icon size={20} color={active ? colors.primary : colors.textSubtle} strokeWidth={active ? 2.3 : 1.9} />
+                </View>
+                <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{label}</Text>
+            </TouchableOpacity>
+        );
+        const tab = (view, icon, label) => (
+            <TabButton key={view} active={currentView === view} icon={icon} label={label} onPress={() => setCurrentView(view)} />
+        );
 
         return (
-            <View style={[styles.tabBar, { paddingBottom: insets.bottom + 4 }]}>
-                {tab('home', BookOpen, 'Home')}
+            <View style={[styles.tabBar, { paddingBottom: insets.bottom + 6 }]}>
+                {tab('home', Home, 'Home')}
                 {userType === 'student' && (
                     <>
                         {tab('courses', FileText, 'Courses')}
-                        {tab('my-courses', GraduationCap, 'My Courses')}
+                        {tab('my-courses', GraduationCap, 'My courses')}
                         {tab('chat', MessageSquare, 'Messages')}
                     </>
                 )}
                 {userType === 'tutor' && (
                     <>
-                        <TouchableOpacity style={styles.tabBtn} onPress={() => setShowCourseManager(true)}>
-                            <FileText size={24} color={showCourseManager ? '#2563eb' : '#6b7280'} />
-                            <Text style={[styles.tabLabel, showCourseManager && styles.tabLabelActive]}>Manage</Text>
-                        </TouchableOpacity>
+                        <TabButton active={showCourseManager} icon={FileText} label="Manage" onPress={() => setShowCourseManager(true)} />
                         {tab('chat', MessageSquare, 'Messages')}
                     </>
                 )}
@@ -502,8 +552,6 @@ const EduConnectApp = () => {
     };
 
     // ── Incoming Call Modal ───────────────────────────────────────────────────
-
-    // ── REPLACE only the IncomingCallModal component in App.jsx ──────────────────
     // The accept button must:
     // 1. Emit call_accepted to the server (so the caller's VoiceCall socket listener fires)
     // 2. Set pendingAutoJoin (so the callee's VoiceCall gets autoJoinMeetingId and joins Agora)
@@ -515,15 +563,16 @@ const EduConnectApp = () => {
             <Modal transparent animationType="fade" visible>
                 <View style={styles.overlay}>
                     <View style={styles.callCard}>
-                        <View style={styles.callAvatar}>
-                            <Video size={40} color="#2563eb" />
+                        <View style={styles.callAvatarRing}>
+                            <Avatar name={incomingCallData.callerName} size={72} />
                         </View>
-                        <Text style={styles.callTitle}>Incoming Voice Call</Text>
-                        <Text style={styles.callSubtitle}>{incomingCallData.callerName} is calling…</Text>
+                        <Pill icon={Video} label="Incoming call" tone="success" style={{ alignSelf: 'center', marginBottom: 10 }} />
+                        <Text style={styles.callTitle}>{incomingCallData.callerName}</Text>
+                        <Text style={styles.callSubtitle}>is calling you…</Text>
                         <View style={styles.callBtns}>
                             {/* ── DECLINE ── */}
                             <TouchableOpacity
-                                style={[styles.callBtn, { backgroundColor: '#dc2626' }]}
+                                style={[styles.callBtn, { backgroundColor: colors.danger }]}
                                 onPress={() => {
                                     stopRingtone();
 
@@ -560,7 +609,7 @@ const EduConnectApp = () => {
 
                             {/* ── ACCEPT ── */}
                             <TouchableOpacity
-                                style={[styles.callBtn, { backgroundColor: '#16a34a' }]}
+                                style={[styles.callBtn, { backgroundColor: colors.success }]}
                                 onPress={() => {
                                     stopRingtone();
 
@@ -583,8 +632,6 @@ const EduConnectApp = () => {
                                     setIncomingCallData(null);
 
                                     // 3. Pass meetingId down to the callee's VoiceCall via autoJoinMeetingId.
-                                    //    VoiceCall's useEffect on autoJoinMeetingId will open the modal
-                                    //    and join the Agora channel immediately.
                                     setPendingAutoJoin({
                                         meetingId,
                                         joinUrl,
@@ -614,110 +661,233 @@ const EduConnectApp = () => {
 
     // ── Home View ─────────────────────────────────────────────────────────────
 
+    const ChoiceCard = ({ icon: Icon, title, text, tint, onPress }) => (
+        <TouchableOpacity activeOpacity={0.85} onPress={onPress}>
+            <Card style={styles.choiceCard}>
+                <View style={[styles.choiceIcon, { backgroundColor: tint }]}>
+                    <Icon size={22} color="#fff" strokeWidth={2} />
+                </View>
+                <View style={{ flex: 1 }}>
+                    <Text style={ui.h3}>{title}</Text>
+                    <Text style={[ui.muted, { marginTop: 2 }]}>{text}</Text>
+                </View>
+                <ChevronRight size={20} color={colors.textSubtle} />
+            </Card>
+        </TouchableOpacity>
+    );
+
     const WelcomeScreen = () => (
         <ScrollView contentContainerStyle={styles.padded}>
-            <View style={[styles.heroGrad, { backgroundColor: '#7c3aed' }]}>
-                <GraduationCap size={48} color="#fff" style={{ alignSelf: 'center', marginBottom: 12 }} />
-                <Text style={styles.heroTitle}>Welcome to EduConnect</Text>
-                <Text style={styles.heroSub}>AI-powered personalized learning for everyone, everywhere.</Text>
-            </View>
-            <View style={styles.gap12}>
-                <TouchableOpacity style={styles.bigBtn} onPress={() => setUserType('student')}>
-                    <BookOpen size={28} color="#fff" />
-                    <View>
-                        <Text style={styles.bigBtnTitle}>I'm a Student</Text>
-                        <Text style={styles.bigBtnSub}>Discover courses & tutors</Text>
-                    </View>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.bigBtn, { backgroundColor: '#16a34a' }]} onPress={() => setUserType('tutor')}>
-                    <Users size={28} color="#fff" />
-                    <View>
-                        <Text style={styles.bigBtnTitle}>I'm a Tutor</Text>
-                        <Text style={styles.bigBtnSub}>Share your expertise</Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
+            <Card style={styles.heroCard}>
+                <View style={styles.heroMark}>
+                    <GraduationCap size={30} color="#fff" strokeWidth={2} />
+                </View>
+                <Text style={styles.heroTitle}>Learn with the right tutor</Text>
+                <Text style={styles.heroSub}>
+                    EduConnect matches students with tutors by subject, learning style and schedule.
+                </Text>
+                <Pill icon={Zap} label="Smart matching" style={{ alignSelf: 'center', marginTop: 14 }} />
+            </Card>
+            <SectionDivider label="Get started" />
+            <ChoiceCard icon={BookOpen} title="I'm a student" text="Find courses and tutors that fit you" tint={colors.primary} onPress={() => setUserType('student')} />
+            <ChoiceCard icon={Users} title="I'm a tutor" text="Share what you know and teach students" tint={colors.success} onPress={() => setUserType('tutor')} />
         </ScrollView>
+    );
+
+    const cap = (v) => {
+        if (v === null || v === undefined || v === '') return '—';
+        const s = String(v).replace(/_/g, ' ');
+        return s.charAt(0).toUpperCase() + s.slice(1);
+    };
+    const asList = (val) => {
+        if (!val) return [];
+        if (Array.isArray(val)) return val;
+        try { const p = JSON.parse(val); return Array.isArray(p) ? p : []; } catch { return []; }
+    };
+
+    const StudentProfileCard = () => {
+        const p = dashProfile;
+        const surveyDone = !!p?.survey_completed;
+        const subjects = asList(p?.preferred_subjects);
+        return (
+            <Card>
+                <View style={styles.profileHead}>
+                    <Avatar name={userName || 'Student'} size={46} />
+                    <View style={{ flex: 1 }}>
+                        <Text style={styles.profileTitle}>{userName ? userName : 'Your profile'}</Text>
+                        <Text style={styles.profileSub}>
+                            Student{p?.skill_level ? ` · ${cap(p.skill_level)}` : ''}
+                        </Text>
+                    </View>
+                    {surveyDone && <Pill icon={Zap} label="Smart matching" />}
+                </View>
+
+                {surveyDone ? (
+                    <TileGrid>
+                        <InfoTile icon={BookOpen} label="Subjects" value={subjects.length ? subjects.slice(0, 3).join(' · ') : '—'} />
+                        <InfoTile icon={TrendingUp} label="Level" value={cap(p.skill_level)} />
+                        <InfoTile icon={Calendar} label="Availability" value={cap(p.available_time)} />
+                        <InfoTile icon={Brain} label="Learning preference" value={cap(p.learning_style)} />
+                    </TileGrid>
+                ) : (
+                    <View style={styles.surveyPrompt}>
+                        <Text style={ui.body}>
+                            Answer a short survey about your subjects, level and schedule so we can match you with tutors.
+                        </Text>
+                        <Button label="Complete survey" onPress={() => setShowSurvey(true)} style={{ marginTop: 14 }} />
+                    </View>
+                )}
+                {surveyDone && (
+                    <TouchableOpacity onPress={() => setShowSurvey(true)} style={styles.editLink}>
+                        <Text style={styles.editLinkText}>Update survey answers</Text>
+                    </TouchableOpacity>
+                )}
+            </Card>
+        );
+    };
+
+    const StatTile = ({ icon: Icon, label, value }) => (
+        <View style={styles.statTile}>
+            <View style={styles.statIcon}><Icon size={18} color={colors.primary} strokeWidth={2} /></View>
+            <View>
+                <Text style={styles.statValue}>{value}</Text>
+                <Text style={styles.statLabel}>{label}</Text>
+            </View>
+        </View>
     );
 
     const LoggedInDashboard = () => (
         <ScrollView contentContainerStyle={styles.padded}>
-            <View style={styles.welcomeBanner}>
-                <Text style={styles.welcomeText}>Welcome back, {userType === 'student' ? 'Learner' : 'Educator'}!</Text>
-            </View>
-            <View style={styles.statsGrid}>
-                {userType === 'student' ? (
-                    <>
-                        <StatCard icon={<BookOpen color="#2563eb" size={20} />} label="Courses" value={courses.length} border="#2563eb" />
-                        <StatCard icon={<Users color="#16a34a" size={20} />} label="Tutors" value={tutors.length} border="#16a34a" />
-                    </>
-                ) : (
-                    <>
-                        <StatCard icon={<BookOpen color="#2563eb" size={20} />} label="My Courses" value={tutorStats.totalCourses} border="#2563eb" />
-                        <StatCard icon={<Users color="#16a34a" size={20} />} label="Students" value={tutorStats.totalStudents} border="#16a34a" />
-                        <StatCard icon={<MessageSquare color="#7c3aed" size={20} />} label="Messages" value={tutorStats.totalMessages} border="#7c3aed" />
-                    </>
-                )}
-            </View>
-            {userType === 'student' && (
-                <View style={styles.gap12}>
-                    <View style={styles.card}>
-                        <Text style={styles.cardTitle}>📝 Learning Profile Survey</Text>
-                        <Text style={styles.cardDesc}>Complete to unlock AI-powered tutor matching!</Text>
-                        <TouchableOpacity style={styles.purpleBtn} onPress={() => setShowSurvey(true)}>
-                            <Text style={styles.purpleBtnText}>Complete Survey</Text>
-                        </TouchableOpacity>
-                    </View>
-                    <View style={styles.card}>
-                        <Text style={styles.cardTitle}>🤖 AI Learning Assistant</Text>
-                        <Text style={styles.cardDesc}>Get personalized course recommendations.</Text>
-                        <TouchableOpacity
-                            style={[styles.purpleBtn, { backgroundColor: '#2563eb' }, aiMatching && { backgroundColor: '#9ca3af' }]}
+            {userType === 'student' ? (
+                <>
+                    <StudentProfileCard />
+
+                    <SectionDivider label="Your learning" />
+
+                    <Card highlighted>
+                        <View style={styles.actionRow}>
+                            <View style={[styles.actionIcon, { backgroundColor: colors.success }]}>
+                                <Sparkles size={20} color="#fff" />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={ui.h3}>Find your tutor matches</Text>
+                                <Text style={[ui.muted, { marginTop: 2 }]}>
+                                    Tutors ranked by subject, style and schedule fit.
+                                </Text>
+                            </View>
+                        </View>
+                        <Button
+                            label={aiMatching ? 'Finding matches…' : 'See my matches'}
+                            icon={Zap}
+                            loading={aiMatching}
                             onPress={handleAIMatching}
-                            disabled={aiMatching}
-                        >
-                            <Text style={styles.purpleBtnText}>
-                                {aiMatching ? 'Analyzing...' : 'Find My Perfect Match'}
-                            </Text>
-                        </TouchableOpacity>
+                            style={{ marginTop: 16 }}
+                        />
+                    </Card>
+
+                    <View style={styles.statRow}>
+                        <StatTile icon={BookOpen} label="Courses available" value={courses.length} />
+                        <StatTile icon={Users} label="Tutors" value={tutors.length} />
                     </View>
-                </View>
+
+                    <Card>
+                        <TouchableOpacity style={styles.linkRow} onPress={() => setCurrentView('courses')}>
+                            <FileText size={18} color={colors.primary} />
+                            <Text style={styles.linkRowText}>Browse courses</Text>
+                            <ChevronRight size={18} color={colors.textSubtle} />
+                        </TouchableOpacity>
+                        <View style={styles.hairline} />
+                        <TouchableOpacity style={styles.linkRow} onPress={() => setCurrentView('my-courses')}>
+                            <GraduationCap size={18} color={colors.primary} />
+                            <Text style={styles.linkRowText}>Continue my courses</Text>
+                            <ChevronRight size={18} color={colors.textSubtle} />
+                        </TouchableOpacity>
+                    </Card>
+                </>
+            ) : (
+                <>
+                    <Card>
+                        <View style={styles.profileHead}>
+                            <Avatar name={userName || 'Tutor'} size={46} color={colors.success} />
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.profileTitle}>{userName || 'Your profile'}</Text>
+                                <Text style={styles.profileSub}>Tutor</Text>
+                            </View>
+                            <Pill icon={User} label="Edit profile" onPress={() => setShowTutorProfile(true)} />
+                        </View>
+                        <TileGrid>
+                            <InfoTile icon={BookOpen} label="Courses" value={String(tutorStats.totalCourses)} />
+                            <InfoTile icon={Users} label="Students" value={String(tutorStats.totalStudents)} />
+                            <InfoTile icon={MessageSquare} label="Messages" value={String(tutorStats.totalMessages)} />
+                            <InfoTile icon={Sparkles} label="Matching" value="Active" />
+                        </TileGrid>
+                    </Card>
+
+                    <SectionDivider label="Your teaching" />
+
+                    <Card>
+                        <TouchableOpacity style={styles.linkRow} onPress={() => setShowCourseManager(true)}>
+                            <FileText size={18} color={colors.primary} />
+                            <Text style={styles.linkRowText}>Manage courses</Text>
+                            <ChevronRight size={18} color={colors.textSubtle} />
+                        </TouchableOpacity>
+                        <View style={styles.hairline} />
+                        <TouchableOpacity style={styles.linkRow} onPress={() => setCurrentView('chat')}>
+                            <MessageSquare size={18} color={colors.primary} />
+                            <Text style={styles.linkRowText}>Messages and calls</Text>
+                            <ChevronRight size={18} color={colors.textSubtle} />
+                        </TouchableOpacity>
+                    </Card>
+                </>
             )}
         </ScrollView>
-    );
-
-    const StatCard = ({ icon, label, value, border }) => (
-        <View style={[styles.statCard, { borderLeftColor: border }]}>
-            {icon}
-            <Text style={styles.statLabel}>{label}</Text>
-            <Text style={styles.statValue}>{value}</Text>
-        </View>
     );
 
     const HomeView = () => {
         if (isAuthenticated) return <LoggedInDashboard />;
         if (!userType) return <WelcomeScreen />;
-        // Student / Tutor landing pages — same structure, different colours
         const isStudent = userType === 'student';
+        const features = isStudent
+            ? [
+                { icon: Sparkles, label: 'Matching', value: 'Tutors ranked for you' },
+                { icon: Video, label: 'Sessions', value: 'Chat and voice calls' },
+                { icon: BookOpen, label: 'Courses', value: 'Materials in one place' },
+                { icon: Calendar, label: 'Schedule', value: 'Learn when it suits you' },
+            ]
+            : [
+                { icon: Users, label: 'Students', value: 'Matched to your subjects' },
+                { icon: FileText, label: 'Courses', value: 'Publish your own' },
+                { icon: MessageSquare, label: 'Sessions', value: 'Chat and voice calls' },
+                { icon: Calendar, label: 'Schedule', value: 'Set your availability' },
+            ];
         return (
             <ScrollView contentContainerStyle={styles.padded}>
-                <View style={[styles.heroGrad, { backgroundColor: isStudent ? '#2563eb' : '#16a34a' }]}>
-                    {isStudent ? <GraduationCap size={32} color="#fff" style={{ alignSelf: 'center', marginBottom: 8 }} /> : <Users size={32} color="#fff" style={{ alignSelf: 'center', marginBottom: 8 }} />}
-                    <Text style={styles.heroTitle}>{isStudent ? 'Learn Without Limits' : 'Teach & Inspire'}</Text>
-                    <Text style={styles.heroSub}>{isStudent ? 'AI-powered education tailored to your needs' : 'Share your knowledge and earn while you educate'}</Text>
-                </View>
-                <View style={styles.gap12}>
-                    <TouchableOpacity style={[styles.bigBtn, !isStudent && { backgroundColor: '#16a34a' }]} onPress={() => setShowRegister(true)}>
-                        {isStudent ? <GraduationCap size={24} color="#fff" /> : <Users size={24} color="#fff" />}
-                        <Text style={styles.bigBtnTitle}>{isStudent ? 'Start Learning Now' : 'Become a Tutor'}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={styles.outlineBtn} onPress={() => setShowLogin(true)}>
-                        <Text style={styles.outlineBtnText}>Already have an account? Log In</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setUserType(null)}>
-                        <Text style={styles.linkText}>← Back to home</Text>
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity onPress={() => setUserType(null)} style={styles.backRow}>
+                    <ChevronLeft size={18} color={colors.textMuted} />
+                    <Text style={styles.backText}>Back</Text>
+                </TouchableOpacity>
+                <Card>
+                    <View style={styles.profileHead}>
+                        <View style={[styles.actionIcon, { backgroundColor: isStudent ? colors.primary : colors.success }]}>
+                            {isStudent ? <GraduationCap size={22} color="#fff" /> : <Users size={22} color="#fff" />}
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.profileTitle}>{isStudent ? 'Learn at your pace' : 'Teach what you know'}</Text>
+                            <Text style={styles.profileSub}>
+                                {isStudent ? 'Tutoring matched to how you learn' : 'Reach students who need your subjects'}
+                            </Text>
+                        </View>
+                    </View>
+                    <TileGrid>
+                        {features.map((f) => <InfoTile key={f.label} icon={f.icon} label={f.label} value={f.value} />)}
+                    </TileGrid>
+                </Card>
+                <Button
+                    label={isStudent ? 'Create student account' : 'Create tutor account'}
+                    variant={isStudent ? 'primary' : 'success'}
+                    onPress={() => setShowRegister(true)}
+                />
+                <Button label="I already have an account" variant="outline" onPress={() => setShowLogin(true)} style={{ marginTop: 10 }} />
             </ScrollView>
         );
     };
@@ -740,45 +910,53 @@ const EduConnectApp = () => {
         if (loading) return <LoadingSpinner />;
 
         const filtered = allCourses.filter((c) =>
-            c.title.toLowerCase().includes(query.toLowerCase())
+            (c.title || '').toLowerCase().includes(query.toLowerCase())
         );
 
         return (
             <ScrollView contentContainerStyle={styles.padded}>
+                <Text style={styles.pageTitle}>Courses</Text>
+                <Text style={styles.pageSub}>{allCourses.length} available</Text>
                 <View style={styles.searchRow}>
-                    <Search size={18} color="#9ca3af" style={{ marginRight: 8 }} />
+                    <Search size={18} color={colors.textSubtle} />
                     <TextInput
                         style={styles.searchInput}
-                        placeholder="Search courses..."
+                        placeholder="Search courses"
+                        placeholderTextColor={colors.textSubtle}
                         value={query}
                         onChangeText={setQuery}
                     />
                 </View>
                 {filtered.map((course) => (
-                    <View key={course.id} style={[styles.courseCard, { borderLeftColor: '#2563eb' }]}>
-                        <Text style={styles.courseTitle}>{course.title}</Text>
-                        <Text style={styles.courseSub}>by {course.tutor_name || 'Unknown'}</Text>
-                        <View style={styles.tagRow}>
-                            <Tag label={course.level} />
-                            {course.duration && <Tag label={course.duration} />}
-                            <Tag label={`${course.total_students || 0} students`} />
-                        </View>
-                        <Text style={styles.courseDesc} numberOfLines={3}>
-                            {course.description || course.overview || 'No description available'}
-                        </Text>
-                        <TouchableOpacity
-                            style={styles.blueBtn}
-                            onPress={() => { setSelectedCourse(course); setCurrentView('course-detail'); }}
-                        >
-                            <Text style={styles.blueBtnText}>View Course</Text>
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity
+                        key={course.id}
+                        activeOpacity={0.85}
+                        onPress={() => { setSelectedCourse(course); setCurrentView('course-detail'); }}
+                    >
+                        <Card>
+                            <Text style={styles.courseTitle}>{course.title}</Text>
+                            <Text style={styles.courseSub}>by {course.tutor_name || 'Unknown'}</Text>
+                            <View style={styles.metaRow}>
+                                {course.level ? <Meta icon={TrendingUp} text={cap(course.level)} /> : null}
+                                {course.duration ? <Meta icon={Clock} text={course.duration} /> : null}
+                                <Meta icon={Users} text={`${course.total_students || 0} students`} />
+                            </View>
+                            <Text style={styles.courseDesc} numberOfLines={3}>
+                                {course.description || course.overview || 'No description yet.'}
+                            </Text>
+                            <View style={styles.cardFooter}>
+                                <Text style={styles.cardFooterText}>View course</Text>
+                                <ChevronRight size={16} color={colors.primary} />
+                            </View>
+                        </Card>
+                    </TouchableOpacity>
                 ))}
                 {filtered.length === 0 && (
-                    <View style={styles.emptyState}>
-                        <BookOpen size={48} color="#d1d5db" />
-                        <Text style={styles.emptyText}>No courses available yet.</Text>
-                    </View>
+                    <EmptyState
+                        icon={BookOpen}
+                        title={query ? 'No courses match your search' : 'No courses yet'}
+                        text={query ? 'Try a different word.' : 'New courses appear here as tutors publish them.'}
+                    />
                 )}
             </ScrollView>
         );
@@ -803,10 +981,11 @@ const EduConnectApp = () => {
         if (!courseDetails) {
             return (
                 <View style={styles.padded}>
-                    <TouchableOpacity onPress={() => setCurrentView('courses')}>
-                        <Text style={styles.backLink}>← Back to Courses</Text>
+                    <TouchableOpacity onPress={() => setCurrentView('courses')} style={styles.backRow}>
+                        <ChevronLeft size={18} color={colors.textMuted} />
+                        <Text style={styles.backText}>Courses</Text>
                     </TouchableOpacity>
-                    <Text>Course not found.</Text>
+                    <EmptyState icon={AlertCircle} title="Course not found" text="It may have been removed by the tutor." />
                 </View>
             );
         }
@@ -817,58 +996,59 @@ const EduConnectApp = () => {
 
         return (
             <ScrollView contentContainerStyle={styles.padded}>
-                <TouchableOpacity onPress={() => setCurrentView('courses')}>
-                    <Text style={styles.backLink}>← Back to Courses</Text>
+                <TouchableOpacity onPress={() => setCurrentView('courses')} style={styles.backRow}>
+                    <ChevronLeft size={18} color={colors.textMuted} />
+                    <Text style={styles.backText}>Courses</Text>
                 </TouchableOpacity>
-                <View style={[styles.heroGrad, { backgroundColor: '#2563eb', marginTop: 8 }]}>
-                    <Text style={[styles.heroTitle, { fontSize: 20 }]}>{courseDetails.title}</Text>
-                    <Text style={{ color: '#bfdbfe', marginTop: 4 }}>by {courseDetails.tutor_name}</Text>
-                    {courseDetails.category && (
-                        <View style={styles.categoryBadge}>
-                            <Text style={styles.categoryText}>{courseDetails.category}</Text>
+                <Card>
+                    <View style={styles.profileHead}>
+                        <View style={[styles.actionIcon, { backgroundColor: colors.primary }]}>
+                            <BookOpen size={20} color="#fff" />
                         </View>
-                    )}
-                </View>
-                <View style={styles.card}>
-                    <Text style={styles.sectionTitle}>Course Overview</Text>
-                    <InfoRow label="Level" value={courseDetails.level} />
-                    {courseDetails.duration && <InfoRow label="Duration" value={courseDetails.duration} />}
-                    <InfoRow label="Students" value={courseDetails.total_students || 0} />
-                    {courseDetails.price !== undefined && (
-                        <InfoRow label="Price" value={courseDetails.price === 0 ? 'Free' : `$${courseDetails.price}`} />
-                    )}
-                </View>
-                {courseDetails.description && (
-                    <View style={styles.card}>
-                        <Text style={styles.sectionTitle}>Description</Text>
-                        <Text style={styles.bodyText}>{courseDetails.description}</Text>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.profileTitle}>{courseDetails.title}</Text>
+                            <Text style={styles.profileSub}>by {courseDetails.tutor_name}</Text>
+                        </View>
+                        {courseDetails.category ? <Pill label={courseDetails.category} /> : null}
                     </View>
-                )}
+                    <TileGrid>
+                        <InfoTile icon={TrendingUp} label="Level" value={cap(courseDetails.level)} />
+                        <InfoTile icon={Clock} label="Duration" value={courseDetails.duration || '—'} />
+                        <InfoTile icon={Users} label="Students" value={String(courseDetails.total_students || 0)} />
+                        {courseDetails.price !== undefined && (
+                            <InfoTile icon={Zap} label="Price" value={courseDetails.price === 0 ? 'Free' : `$${courseDetails.price}`} />
+                        )}
+                    </TileGrid>
+                </Card>
+                {courseDetails.description ? (
+                    <Card>
+                        <Text style={styles.sectionTitle}>About this course</Text>
+                        <Text style={ui.body}>{courseDetails.description}</Text>
+                    </Card>
+                ) : null}
                 {learningOutcomes.length > 0 && (
-                    <View style={styles.card}>
-                        <Text style={styles.sectionTitle}>What You'll Learn</Text>
+                    <Card>
+                        <Text style={styles.sectionTitle}>What you'll learn</Text>
                         {learningOutcomes.map((o, i) => (
                             <View key={i} style={styles.checkRow}>
-                                <CheckCircle size={16} color="#16a34a" />
-                                <Text style={[styles.bodyText, { marginLeft: 8, flex: 1 }]}>{o}</Text>
+                                <CheckCircle size={17} color={colors.success} />
+                                <Text style={[ui.body, { flex: 1 }]}>{o}</Text>
                             </View>
                         ))}
-                    </View>
+                    </Card>
                 )}
                 {prerequisites.length > 0 && (
-                    <View style={styles.card}>
-                        <Text style={styles.sectionTitle}>Prerequisites</Text>
+                    <Card>
+                        <Text style={styles.sectionTitle}>Before you start</Text>
                         {prerequisites.map((p, i) => (
                             <View key={i} style={styles.checkRow}>
-                                <AlertCircle size={16} color="#2563eb" />
-                                <Text style={[styles.bodyText, { marginLeft: 8, flex: 1 }]}>{p}</Text>
+                                <AlertCircle size={17} color={colors.primary} />
+                                <Text style={[ui.body, { flex: 1 }]}>{p}</Text>
                             </View>
                         ))}
-                    </View>
+                    </Card>
                 )}
-                <TouchableOpacity style={styles.blueBtn} onPress={() => handleEnroll(courseDetails.id)}>
-                    <Text style={styles.blueBtnText}>Enroll Now</Text>
-                </TouchableOpacity>
+                <Button label="Enroll in course" onPress={() => handleEnroll(courseDetails.id)} />
             </ScrollView>
         );
     };
@@ -904,30 +1084,32 @@ const EduConnectApp = () => {
 
         return (
             <ScrollView contentContainerStyle={styles.padded}>
-                <Text style={styles.pageTitle}>My Courses</Text>
+                <Text style={styles.pageTitle}>My courses</Text>
+                <Text style={styles.pageSub}>
+                    {enrolledCourses.length} enrolled
+                </Text>
                 {enrolledCourses.length === 0 ? (
-                    <View style={styles.emptyState}>
-                        <BookOpen size={48} color="#d1d5db" />
-                        <Text style={styles.emptyText}>You haven't enrolled in any courses yet</Text>
-                        <TouchableOpacity style={styles.blueBtn} onPress={() => setCurrentView('courses')}>
-                            <Text style={styles.blueBtnText}>Browse Courses</Text>
-                        </TouchableOpacity>
-                    </View>
+                    <EmptyState
+                        icon={GraduationCap}
+                        title="You're not enrolled in any courses"
+                        text="Pick a course to start learning. It will show up here."
+                        action={<Button label="Browse courses" onPress={() => setCurrentView('courses')} />}
+                    />
                 ) : (
                     enrolledCourses.map((e) => (
-                        <View key={e.id} style={[styles.courseCard, { borderLeftColor: '#2563eb' }]}>
-                            <Text style={styles.courseTitle}>{e.course_title}</Text>
-                            <Text style={styles.courseSub}>by {e.tutor_name}</Text>
-                            {e.completed && (
-                                <View style={styles.completedBadge}>
-                                    <CheckCircle size={12} color="#166534" />
-                                    <Text style={styles.completedText}>Completed</Text>
+                        <Card key={e.id}>
+                            <View style={styles.profileHead}>
+                                <View style={[styles.actionIcon, { backgroundColor: e.completed ? colors.success : colors.primary }]}>
+                                    <BookOpen size={20} color="#fff" />
                                 </View>
-                            )}
-                            <TouchableOpacity style={styles.purpleBtn} onPress={() => setViewingMaterials(e)}>
-                                <Text style={styles.purpleBtnText}>View Course Materials</Text>
-                            </TouchableOpacity>
-                        </View>
+                                <View style={{ flex: 1 }}>
+                                    <Text style={styles.courseTitle}>{e.course_title}</Text>
+                                    <Text style={styles.courseSub}>by {e.tutor_name}</Text>
+                                </View>
+                                {e.completed ? <Pill icon={CheckCircle} label="Completed" tone="success" /> : <Pill label="In progress" />}
+                            </View>
+                            <Button label="Open materials" variant="soft" icon={FileText} onPress={() => setViewingMaterials(e)} />
+                        </Card>
                     ))
                 )}
             </ScrollView>
@@ -936,12 +1118,9 @@ const EduConnectApp = () => {
 
     // ── Chat View (Student or Tutor) ──────────────────────────────────────────
 
-    // AFTER
-
-    // AFTER
     const ChatView = ({ appSocket, openConversationId, pendingAutoJoin, onConversationOpened, onCallEnded }) => {
         const [userData, setUserData] = useState(null);
-        const [token, setToken] = useState(null);  // ← add this
+        const [token, setToken] = useState(null);
 
         useEffect(() => {
             (async () => {
@@ -951,8 +1130,8 @@ const EduConnectApp = () => {
                 const userName = user?.full_name || (await storage.getItem('userName')) || 'User';
                 const uType = user?.user_type || (await storage.getItem('userType'));
                 const tutorProfileId = user?.tutor_profile_id || Number(await storage.getItem('tutorProfileId')) || null;
-                const authToken = await storage.getItem('token');  // ← add this
-                setToken(authToken);  // ← add this
+                const authToken = await storage.getItem('token');
+                setToken(authToken);
                 setUserData({ userId, userName, uType, tutorProfileId });
             })();
         }, []);
@@ -972,7 +1151,7 @@ const EduConnectApp = () => {
                     callerName={autoJoin?.callerName || null}
                     callerTutorProfileId={autoJoin?.callerTutorProfileId || null}
                     onCallEnded={onCallEnded}
-                    authToken={token}  // ← add this
+                    authToken={token}
                 />
             );
         }
@@ -989,10 +1168,11 @@ const EduConnectApp = () => {
                 callerName={autoJoin?.callerName || null}
                 callerStudentId={autoJoin?.callerStudentId || null}
                 onCallEnded={onCallEnded}
-                authToken={token}  // ← add this
+                authToken={token}
             />
         );
     };
+
     // ── Main Render ───────────────────────────────────────────────────────────
 
     const renderView = () => {
@@ -1009,11 +1189,9 @@ const EduConnectApp = () => {
 
     return (
         <View style={styles.root}>
-            <StatusBar barStyle="light-content" backgroundColor="#2563eb" />
+            <StatusBar barStyle="dark-content" backgroundColor={colors.surface} />
             <NavBar />
             <View style={styles.content}>
-
-
 
                 {isAuthenticated && currentView === 'chat' && (
                     <ChatView
@@ -1045,9 +1223,6 @@ const EduConnectApp = () => {
                 <EnhancedLoginModal
                     onClose={() => setShowLogin(false)}
                     onSuccess={async (data) => {
-                        console.log('LOGIN TOKEN:', data.token); //
-                        console.log('SAVED, reading back:', await storage.getItem('token')); // ← and this
-
                         await storage.setItem('token', data.token);
                         await storage.setItem('userType', data.user.user_type);
                         await storage.setJSON('user', data.user);
@@ -1075,7 +1250,16 @@ const EduConnectApp = () => {
                     }}
                 />
             )}
-            {showSurvey && <StudentSurvey onClose={() => setShowSurvey(false)} onComplete={() => { setShowSurvey(false); Alert.alert('Done!', 'Survey completed! You can now use AI matching.'); }} />}
+            {showSurvey && (
+                <StudentSurvey
+                    onClose={() => setShowSurvey(false)}
+                    onComplete={() => {
+                        setShowSurvey(false);
+                        loadDashProfile();
+                        Alert.alert('Done!', 'Survey completed! You can now use AI matching.');
+                    }}
+                />
+            )}
             {showTutorOnboarding && (
                 <TutorOnboarding
                     onComplete={async (profileData) => {
@@ -1102,15 +1286,24 @@ const EduConnectApp = () => {
             {showCourseManager && <TutorCourseManager onClose={() => setShowCourseManager(false)} />}
             {showAIMatcherModal && studentProfileForMatching && (
                 <Modal visible animationType="slide">
-                    <SafeAreaView style={{ flex: 1 }}>
+                    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>AI Tutor Matching</Text>
-                            <TouchableOpacity onPress={() => { setShowAIMatcherModal(false); setStudentProfileForMatching(null); }}>
-                                <X size={24} color="#374151" />
+                            <Text style={styles.modalTitle}>Tutor matches</Text>
+                            <TouchableOpacity
+                                style={styles.modalClose}
+                                onPress={() => { setShowAIMatcherModal(false); setStudentProfileForMatching(null); }}
+                            >
+                                <X size={18} color={colors.text} />
                             </TouchableOpacity>
                         </View>
                         <AITutorMatcher
                             studentProfile={studentProfileForMatching}
+                            studentName={userName}
+                            onEditProfile={() => {
+                                setShowAIMatcherModal(false);
+                                setStudentProfileForMatching(null);
+                                setShowSurvey(true);
+                            }}
                             onSelectTutor={(match) => {
                                 Alert.alert(
                                     'Match found!',
@@ -1125,8 +1318,6 @@ const EduConnectApp = () => {
                                     }]
                                 );
                             }}
-
-
                         />
                     </SafeAreaView>
                 </Modal>
@@ -1139,136 +1330,124 @@ const EduConnectApp = () => {
 
 const LoadingSpinner = () => (
     <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#2563eb" />
-        <Text style={{ color: '#6b7280', marginTop: 8 }}>Loading…</Text>
+        <ActivityIndicator size="large" color={colors.primary} />
+        <Text style={[ui.muted, { marginTop: 10 }]}>Loading…</Text>
     </View>
 );
 
-const Tag = ({ label }) => (
-    <View style={styles.tag}><Text style={styles.tagText}>{label}</Text></View>
-);
-
-const InfoRow = ({ label, value }) => (
-    <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>{label}</Text>
-        <Text style={styles.infoValue}>{String(value)}</Text>
+const Meta = ({ icon: Icon, text }) => (
+    <View style={styles.meta}>
+        <Icon size={14} color={colors.primary} strokeWidth={2} />
+        <Text style={styles.metaText}>{text}</Text>
     </View>
 );
 
 // ── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-    root: { flex: 1, backgroundColor: '#f9fafb' },
+    root: { flex: 1, backgroundColor: colors.bg },
     content: { flex: 1 },
 
     // NavBar
-    navbar: { backgroundColor: '#2563eb', shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 4 },
+    navbar: { backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border, zIndex: 10 },
     navRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: gutter(16), paddingVertical: 12 },
-    navLogo: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    navTitle: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+    navLogo: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    logoMark: { width: 34, height: 34, borderRadius: 10, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
+    navTitle: { fontFamily: font, color: colors.text, fontSize: 18, fontWeight: '800', letterSpacing: -0.2 },
     navActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    btnOutline: { backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-    btnOutlineText: { color: '#fff', fontSize: 13, fontWeight: '500' },
-    btnWhite: { backgroundColor: '#fff', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-    btnWhiteText: { color: '#2563eb', fontSize: 13, fontWeight: '600' },
-    onlineBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.15)', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8, gap: 6 },
-    greenDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#4ade80' },
-    onlineBadgeText: { color: '#fff', fontSize: 13, fontWeight: '500', textTransform: 'capitalize' },
-    menuBtn: { padding: 6 },
-    dropdown: { borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.1)', paddingVertical: 4 },
-    menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: gutter(16), paddingVertical: 12 },
-    menuItemText: { color: '#fff', fontSize: 15, fontWeight: '500' },
-    divider: { borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.2)', marginVertical: 4, marginHorizontal: gutter(16) },
+    navGhostBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.sm },
+    navGhostText: { fontFamily: font, color: colors.text, fontSize: 14, fontWeight: '600' },
+    navPrimaryBtn: { backgroundColor: colors.primary, paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.sm },
+    navPrimaryText: { fontFamily: font, color: '#fff', fontSize: 14, fontWeight: '700' },
+    rolePill: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.primarySoft, paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill, gap: 6 },
+    greenDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: colors.success },
+    rolePillText: { fontFamily: font, color: colors.primary, fontSize: 13, fontWeight: '700', textTransform: 'capitalize' },
+    menuBtn: { width: 38, height: 38, borderRadius: radius.sm, backgroundColor: colors.tile, alignItems: 'center', justifyContent: 'center' },
+    dropdownWrap: { paddingHorizontal: gutter(12), paddingBottom: 12 },
+    dropdown: { backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, paddingVertical: 6, ...shadow },
+    menuItem: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 12, paddingVertical: 9 },
+    menuIcon: { width: 32, height: 32, borderRadius: 9, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+    menuItemText: { fontFamily: font, color: colors.text, fontSize: 15, fontWeight: '600' },
+    divider: { height: 1, backgroundColor: colors.border, marginVertical: 6, marginHorizontal: 12 },
 
     // Tab bar
-    tabBar: { flexDirection: 'row', backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#e5e7eb', shadowColor: '#000', shadowOpacity: 0.05, elevation: 8, paddingTop: 4, paddingHorizontal: gutter(0) },
-    tabBtn: { flex: 1, alignItems: 'center', paddingVertical: 6 },
-    tabLabel: { fontSize: 11, color: '#6b7280', marginTop: 2 },
-    tabLabelActive: { color: '#2563eb' },
+    tabBar: { flexDirection: 'row', backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 8, paddingHorizontal: gutter(0) },
+    tabBtn: { flex: 1, alignItems: 'center', gap: 3 },
+    tabIconWrap: { paddingHorizontal: 16, paddingVertical: 4, borderRadius: radius.pill },
+    tabIconWrapActive: { backgroundColor: colors.primarySoft },
+    tabLabel: { fontFamily: font, fontSize: 11, color: colors.textSubtle, fontWeight: '600' },
+    tabLabelActive: { color: colors.primary, fontWeight: '700' },
 
     // Incoming call
-    overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.75)', justifyContent: 'center', alignItems: 'center', padding: 16 },
-    callCard: { backgroundColor: '#fff', borderRadius: 16, padding: 32, alignItems: 'center', width: '100%', maxWidth: 360 },
-    callAvatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: '#dbeafe', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },
-    callTitle: { fontSize: 22, fontWeight: 'bold', color: '#111827', marginBottom: 4 },
-    callSubtitle: { fontSize: 15, color: '#6b7280', marginBottom: 24 },
-    callBtns: { flexDirection: 'row', gap: 12 },
-    callBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 10 },
-    callBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
+    overlay: { flex: 1, backgroundColor: 'rgba(17,24,39,0.55)', justifyContent: 'center', alignItems: 'center', padding: 16 },
+    callCard: { backgroundColor: colors.surface, borderRadius: 24, padding: 28, alignItems: 'center', width: '100%', maxWidth: 360 },
+    callAvatarRing: { padding: 6, borderRadius: 60, backgroundColor: colors.primarySoft, marginBottom: 14 },
+    callTitle: { fontFamily: font, fontSize: 22, fontWeight: '800', color: colors.text },
+    callSubtitle: { fontFamily: font, fontSize: 15, color: colors.textMuted, marginTop: 2, marginBottom: 24 },
+    callBtns: { flexDirection: 'row', gap: 12, alignSelf: 'stretch' },
+    callBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: radius.md },
+    callBtnText: { fontFamily: font, color: '#fff', fontWeight: '700', fontSize: 15 },
 
     // General layout — pages are capped at PAGE_WIDTH and centred on the web
-    padded: { width: '100%', maxWidth: PAGE_WIDTH, alignSelf: 'center', padding: 16, paddingBottom: 32 },
-    gap12: { gap: 12 },
+    padded: { width: '100%', maxWidth: PAGE_WIDTH, alignSelf: 'center', padding: 16, paddingTop: 20, paddingBottom: 40 },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
-    // Hero
-    heroGrad: { borderRadius: 12, padding: 24, marginBottom: 16, alignItems: 'center' },
-    heroTitle: { color: '#fff', fontSize: 26, fontWeight: 'bold', textAlign: 'center', marginBottom: 6 },
-    heroSub: { color: 'rgba(255,255,255,0.8)', fontSize: 14, textAlign: 'center' },
+    // Welcome
+    heroCard: { alignItems: 'center', paddingVertical: 32 },
+    heroMark: { width: 60, height: 60, borderRadius: 18, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+    heroTitle: { fontFamily: font, color: colors.text, fontSize: 26, fontWeight: '800', textAlign: 'center', letterSpacing: -0.4 },
+    heroSub: { fontFamily: font, color: colors.textMuted, fontSize: 15, lineHeight: 22, textAlign: 'center', marginTop: 8, maxWidth: 420 },
+    choiceCard: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+    choiceIcon: { width: 46, height: 46, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+    backRow: { flexDirection: 'row', alignItems: 'center', gap: 2, alignSelf: 'flex-start', marginBottom: 12 },
+    backText: { fontFamily: font, fontSize: 14, fontWeight: '600', color: colors.textMuted },
 
-    // Big buttons
-    bigBtn: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: '#2563eb', padding: 16, borderRadius: 12, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 },
-    bigBtnTitle: { color: '#fff', fontSize: 17, fontWeight: 'bold' },
-    bigBtnSub: { color: 'rgba(255,255,255,0.8)', fontSize: 12 },
-    outlineBtn: { borderWidth: 2, borderColor: '#d1d5db', borderRadius: 12, padding: 14, alignItems: 'center' },
-    outlineBtnText: { color: '#374151', fontWeight: '600' },
-    linkText: { color: '#6b7280', textAlign: 'center', paddingVertical: 8, fontSize: 13 },
+    // Profile card
+    profileHead: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 18 },
+    profileTitle: { fontFamily: font, fontSize: 19, fontWeight: '700', color: colors.text },
+    profileSub: { fontFamily: font, fontSize: 14, color: colors.textMuted, marginTop: 2 },
+    surveyPrompt: { backgroundColor: colors.tile, borderRadius: radius.md, padding: 16 },
+    editLink: { alignSelf: 'flex-start', marginTop: 14 },
+    editLinkText: { fontFamily: font, fontSize: 13, fontWeight: '600', color: colors.primary },
 
     // Dashboard
-    welcomeBanner: { backgroundColor: '#ede9fe', borderRadius: 10, padding: 16, marginBottom: 12 },
-    welcomeText: { fontSize: 18, fontWeight: 'bold', color: '#1f2937' },
-    statsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 12 },
-    statCard: { flex: 1, minWidth: '45%', backgroundColor: '#fff', borderRadius: 10, padding: 14, borderLeftWidth: 4, shadowColor: '#000', shadowOpacity: 0.05, elevation: 1 },
-    statLabel: { fontSize: 12, color: '#6b7280', marginTop: 4 },
-    statValue: { fontSize: 22, fontWeight: 'bold', color: '#111827' },
-    card: { backgroundColor: '#fff', borderRadius: 10, padding: 14, marginBottom: 12, shadowColor: '#000', shadowOpacity: 0.05, elevation: 1 },
-    cardTitle: { fontSize: 15, fontWeight: '600', marginBottom: 6 },
-    cardDesc: { fontSize: 13, color: '#6b7280', marginBottom: 10 },
+    actionRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+    actionIcon: { width: 44, height: 44, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
+    statRow: { flexDirection: 'row', gap: 12, marginBottom: 14 },
+    statTile: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg + 2, padding: 16, ...shadow },
+    statIcon: { width: 38, height: 38, borderRadius: 10, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+    statValue: { fontFamily: font, fontSize: 20, fontWeight: '800', color: colors.text },
+    statLabel: { fontFamily: font, fontSize: 12, color: colors.textMuted },
+    linkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6 },
+    linkRowText: { fontFamily: font, flex: 1, fontSize: 15, fontWeight: '600', color: colors.text },
+    hairline: { height: 1, backgroundColor: colors.border, marginVertical: 10 },
 
-    // Buttons
-    blueBtn: { backgroundColor: '#2563eb', borderRadius: 8, paddingVertical: 12, alignItems: 'center', marginTop: 8 },
-    blueBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-    purpleBtn: { backgroundColor: '#7c3aed', borderRadius: 8, paddingVertical: 10, alignItems: 'center' },
-    purpleBtnText: { color: '#fff', fontWeight: '600' },
+    // Pages
+    pageTitle: { fontFamily: font, fontSize: 24, fontWeight: '800', color: colors.text, letterSpacing: -0.3 },
+    pageSub: { fontFamily: font, fontSize: 14, color: colors.textMuted, marginTop: 2, marginBottom: 16 },
 
     // Search
-    searchRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#d1d5db', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: '#fff', marginBottom: 12 },
-    searchInput: { flex: 1, fontSize: 14, color: '#111827' },
+    searchRow: { flexDirection: 'row', alignItems: 'center', gap: 10, borderWidth: 1, borderColor: colors.border, borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: Platform.OS === 'web' ? 12 : 8, backgroundColor: colors.surface, marginBottom: 14 },
+    searchInput: { flex: 1, fontFamily: font, fontSize: 15, color: colors.text, ...(Platform.OS === 'web' ? { outlineStyle: 'none' } : {}) },
 
     // Course card
-    courseCard: { backgroundColor: '#fff', borderRadius: 10, padding: 14, marginBottom: 10, borderLeftWidth: 4, shadowColor: '#000', shadowOpacity: 0.05, elevation: 1 },
-    courseTitle: { fontSize: 16, fontWeight: 'bold', color: '#111827' },
-    courseSub: { fontSize: 13, color: '#6b7280', marginBottom: 6 },
-    courseDesc: { fontSize: 13, color: '#6b7280', marginBottom: 8 },
-    tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 8 },
-    tag: { backgroundColor: '#dbeafe', borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2 },
-    tagText: { fontSize: 11, color: '#1e40af' },
-
-    // Empty state
-    emptyState: { alignItems: 'center', paddingVertical: 40, gap: 10 },
-    emptyText: { color: '#9ca3af', fontSize: 15 },
+    courseTitle: { fontFamily: font, fontSize: 17, fontWeight: '700', color: colors.text },
+    courseSub: { fontFamily: font, fontSize: 14, color: colors.textMuted, marginTop: 2 },
+    courseDesc: { fontFamily: font, fontSize: 14, color: colors.textMuted, lineHeight: 20, marginTop: 12 },
+    metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 16, marginTop: 12 },
+    meta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+    metaText: { fontFamily: font, fontSize: 13, fontWeight: '600', color: colors.text },
+    cardFooter: { flexDirection: 'row', alignItems: 'center', gap: 2, marginTop: 14 },
+    cardFooterText: { fontFamily: font, fontSize: 14, fontWeight: '700', color: colors.primary },
 
     // Course detail
-    backLink: { color: '#2563eb', fontSize: 14, marginBottom: 8 },
-    sectionTitle: { fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 10 },
-    bodyText: { fontSize: 13, color: '#374151', lineHeight: 20 },
-    infoRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' },
-    infoLabel: { color: '#6b7280', fontSize: 13 },
-    infoValue: { fontWeight: '600', fontSize: 13 },
-    checkRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 6 },
-    categoryBadge: { backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 99, paddingHorizontal: 10, paddingVertical: 4, alignSelf: 'center', marginTop: 8 },
-    categoryText: { color: '#fff', fontSize: 12 },
-
-    // Enrolled badge
-    completedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#dcfce7', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2, alignSelf: 'flex-start', marginBottom: 8 },
-    completedText: { color: '#166534', fontSize: 11, fontWeight: '600' },
-
-    // Page title
-    pageTitle: { fontSize: 22, fontWeight: 'bold', color: '#111827', marginBottom: 4 },
+    sectionTitle: { fontFamily: font, fontSize: 16, fontWeight: '700', color: colors.text, marginBottom: 12 },
+    checkRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
 
     // AI Matcher modal
-    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16, paddingHorizontal: gutter(16), borderBottomWidth: 1, borderBottomColor: '#e5e7eb' },
-    modalTitle: { fontSize: 18, fontWeight: 'bold', color: '#111827' },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: gutter(16), backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border },
+    modalTitle: { fontFamily: font, fontSize: 18, fontWeight: '800', color: colors.text },
+    modalClose: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.tile, alignItems: 'center', justifyContent: 'center' },
 });
 const App = () => (
     <SafeAreaProvider>
