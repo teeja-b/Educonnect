@@ -713,7 +713,7 @@ const EduConnectApp = () => {
             <Card>
                 <View style={styles.profileHead}>
                     <Avatar name={userName || 'Student'} size={46} />
-                    <View style={{ flex: 1 }}>
+                    <View style={styles.headText}>
                         <Text style={styles.profileTitle}>{userName ? userName : 'Your profile'}</Text>
                         <Text style={styles.profileSub}>
                             Student{p?.skill_level ? ` · ${cap(p.skill_level)}` : ''}
@@ -809,7 +809,7 @@ const EduConnectApp = () => {
                     <Card>
                         <View style={styles.profileHead}>
                             <Avatar name={userName || 'Tutor'} size={46} color={colors.success} />
-                            <View style={{ flex: 1 }}>
+                            <View style={styles.headText}>
                                 <Text style={styles.profileTitle}>{userName || 'Your profile'}</Text>
                                 <Text style={styles.profileSub}>Tutor</Text>
                             </View>
@@ -871,7 +871,7 @@ const EduConnectApp = () => {
                         <View style={[styles.actionIcon, { backgroundColor: isStudent ? colors.primary : colors.success }]}>
                             {isStudent ? <GraduationCap size={22} color="#fff" /> : <Users size={22} color="#fff" />}
                         </View>
-                        <View style={{ flex: 1 }}>
+                        <View style={styles.headText}>
                             <Text style={styles.profileTitle}>{isStudent ? 'Learn at your pace' : 'Teach what you know'}</Text>
                             <Text style={styles.profileSub}>
                                 {isStudent ? 'Tutoring matched to how you learn' : 'Reach students who need your subjects'}
@@ -1005,7 +1005,7 @@ const EduConnectApp = () => {
                         <View style={[styles.actionIcon, { backgroundColor: colors.primary }]}>
                             <BookOpen size={20} color="#fff" />
                         </View>
-                        <View style={{ flex: 1 }}>
+                        <View style={styles.headText}>
                             <Text style={styles.profileTitle}>{courseDetails.title}</Text>
                             <Text style={styles.profileSub}>by {courseDetails.tutor_name}</Text>
                         </View>
@@ -1102,7 +1102,7 @@ const EduConnectApp = () => {
                                 <View style={[styles.actionIcon, { backgroundColor: e.completed ? colors.success : colors.primary }]}>
                                     <BookOpen size={20} color="#fff" />
                                 </View>
-                                <View style={{ flex: 1 }}>
+                                <View style={styles.headText}>
                                     <Text style={styles.courseTitle}>{e.course_title}</Text>
                                     <Text style={styles.courseSub}>by {e.tutor_name}</Text>
                                 </View>
@@ -1285,8 +1285,12 @@ const EduConnectApp = () => {
             {showTutorProfile && <TutorProfile onClose={() => setShowTutorProfile(false)} token={authToken} />}
             {showCourseManager && <TutorCourseManager onClose={() => setShowCourseManager(false)} />}
             {showAIMatcherModal && studentProfileForMatching && (
-                <Modal visible animationType="slide">
-                    <SafeAreaView style={{ flex: 1, backgroundColor: colors.bg }}>
+                <Modal visible animationType="slide" statusBarTranslucent>
+                    <SafeAreaView style={{
+                        flex: 1, backgroundColor: colors.bg,
+                        paddingTop: Platform.OS === 'android' ? insets.top : 0,
+                        paddingBottom: Platform.OS === 'android' ? insets.bottom : 0,
+                    }}>
                         <View style={styles.modalHeader}>
                             <Text style={styles.modalTitle}>Tutor matches</Text>
                             <TouchableOpacity
@@ -1403,7 +1407,9 @@ const styles = StyleSheet.create({
     backText: { fontFamily: font, fontSize: 14, fontWeight: '600', color: colors.textMuted },
 
     // Profile card
-    profileHead: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 18 },
+    // Wraps the trailing pill onto its own line when the screen is too narrow
+    profileHead: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 14, rowGap: 12, marginBottom: 18 },
+    headText: { flexGrow: 1, flexShrink: 1, flexBasis: 170, minWidth: 0 },
     profileTitle: { fontFamily: font, fontSize: 19, fontWeight: '700', color: colors.text },
     profileSub: { fontFamily: font, fontSize: 14, color: colors.textMuted, marginTop: 2 },
     surveyPrompt: { backgroundColor: colors.tile, borderRadius: radius.md, padding: 16 },
