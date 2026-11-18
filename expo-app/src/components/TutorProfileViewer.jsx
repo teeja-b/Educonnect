@@ -8,18 +8,39 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TouchableOpacity, ScrollView,
-  StyleSheet, SafeAreaView, ActivityIndicator, Alert, Modal,
+  View,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  SafeAreaView,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, colors as C, font, radius, shadow } from '../theme';
 import { Feather as Icon } from '@expo/vector-icons';
+import { API_URL as CONFIG_API_URL } from '../utils/config';
+
+// Rates are stored in the tutor's currency (Mauritian rupees unless set otherwise).
+const CURRENCY_SYMBOL = { MUR: 'Rs', USD: 'US$', EUR: '€', GBP: '£', INR: '₹' };
+const formatRate = (amount, currency) => {
+  const sym = CURRENCY_SYMBOL[(currency || 'MUR').toUpperCase()] || (currency || 'Rs');
+  return `${sym} ${Number(amount || 0).toLocaleString('en-US')}`;
+};
 
 const TutorProfileViewer = ({
   tutorId,
   onClose,
   onMessageTutor,
-  API_URL = 'https://hult-663884308553.europe-west9.run.app',
+  API_URL = CONFIG_API_URL,
   visible = true,
 }) => {
+  // Android draws modals under the status bar and navigation buttons;
+  // React Native's SafeAreaView only pads on iOS (same fix as App.jsx).
+  const insets = useSafeAreaInsets();
+  const sysPad = Platform.OS === 'android' ? { paddingTop: insets.top, paddingBottom: insets.bottom } : null;
   const [tutor, setTutor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -89,7 +110,7 @@ const TutorProfileViewer = ({
   if (loading) {
     return (
       <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-        <SafeAreaView style={styles.centered}>
+        <SafeAreaView style={[styles.centered, sysPad]}>
           <ActivityIndicator size="large" color="#2F5BEA" />
           <Text style={styles.loadingText}>Loading tutor profile…</Text>
         </SafeAreaView>
@@ -100,7 +121,7 @@ const TutorProfileViewer = ({
   if (error) {
     return (
       <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-        <SafeAreaView style={styles.centered}>
+        <SafeAreaView style={[styles.centered, sysPad]}>
           <Icon name="alert-circle" size={36} color="#EF4444" />
           <Text style={styles.errorText}>{error}</Text>
           <TouchableOpacity style={styles.closeBtnLarge} onPress={onClose}>
@@ -115,7 +136,7 @@ const TutorProfileViewer = ({
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, sysPad]}>
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerContent}>
@@ -123,11 +144,11 @@ const TutorProfileViewer = ({
               <Text style={styles.avatarInitial}>{tutor.name?.charAt(0)?.toUpperCase()}</Text>
             </View>
             <View style={styles.headerInfo}>
-              <Text style={styles.tutorName}>{tutor.name}</Text>
+              <Text style={styles.tutorName} numberOfLines={1}>{tutor.name}</Text>
               <View style={styles.badgeRow}>
                 {tutor.verified && (
                   <View style={styles.badge}>
-                    <Icon name="check-circle" size={12} color="#fff" />
+                    <Icon name="check-circle" size={12} color={C.primary} />
                     <Text style={styles.badgeText}>Verified</Text>
                   </View>
                 )}
@@ -146,8 +167,8 @@ const TutorProfileViewer = ({
               </View>
             </View>
           </View>
-          <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-            <Icon name="x" size={22} color="#fff" />
+          <TouchableOpacity onPress={onClose} style={styles.closeBtn} accessibilityLabel="Close">
+            <Icon name="x" size={20} color={C.text} />
           </TouchableOpacity>
         </View>
 
@@ -155,22 +176,24 @@ const TutorProfileViewer = ({
           {/* Quick Stats */}
           <View style={styles.statsGrid}>
             <View style={[styles.statCard, { backgroundColor: '#E8EEFD' }]}>
-              <Icon name="dollar-sign" size={20} color="#2F5BEA" />
-              <Text style={[styles.statValue, { color: '#2F5BEA' }]}>${tutor.hourly_rate || 0}</Text>
+              <Icon name="tag" size={18} color="#2F5BEA" />
+              <Text style={[styles.statValue, { color: '#2F5BEA' }]} numberOfLines={1} adjustsFontSizeToFit>
+                {formatRate(tutor.hourly_rate, tutor.price_currency)}
+              </Text>
               <Text style={styles.statLabel}>per hour</Text>
             </View>
             <View style={[styles.statCard, { backgroundColor: '#E6F7EF' }]}>
-              <Icon name="briefcase" size={20} color="#059669" />
+              <Icon name="briefcase" size={18} color="#059669" />
               <Text style={[styles.statValue, { color: '#059669' }]}>{tutor.years_experience || '0'}</Text>
               <Text style={styles.statLabel}>experience</Text>
             </View>
             <View style={[styles.statCard, { backgroundColor: '#FFF7ED' }]}>
-              <Icon name="users" size={20} color="#EA580C" />
+              <Icon name="users" size={18} color="#EA580C" />
               <Text style={[styles.statValue, { color: '#EA580C' }]}>{tutor.total_sessions || 0}</Text>
               <Text style={styles.statLabel}>sessions</Text>
             </View>
             <View style={[styles.statCard, { backgroundColor: '#FEF9C3' }]}>
-              <Icon name="star" size={20} color="#CA8A04" />
+              <Icon name="star" size={18} color="#CA8A04" />
               <Text style={[styles.statValue, { color: '#CA8A04' }]}>{tutor.rating ? tutor.rating.toFixed(1) : 'New'}</Text>
               <Text style={styles.statLabel}>rating</Text>
             </View>
@@ -289,15 +312,15 @@ const TutorProfileViewer = ({
 
         {/* Actions */}
         <View style={styles.actions}>
+          <TouchableOpacity style={styles.closeActionBtn} onPress={onClose}>
+            <Text style={styles.closeActionBtnText}>Close</Text>
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.messageBtn}
             onPress={() => { onClose(); if (onMessageTutor) onMessageTutor(tutor.user_id); }}
           >
             <Icon name="message-square" size={18} color="#fff" />
             <Text style={styles.messageBtnText}>Message Tutor</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.closeActionBtn} onPress={onClose}>
-            <Text style={styles.closeActionBtnText}>Close</Text>
           </TouchableOpacity>
         </View>
       </SafeAreaView>
@@ -306,66 +329,66 @@ const TutorProfileViewer = ({
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F6F8FC' },
+  container: { flex: 1, backgroundColor: C.bg },
   centered: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12 },
-  loadingText: { color: '#6B7280', fontSize: 13 },
+  loadingText: { color: C.textMuted, fontSize: 13 },
   errorText: { color: '#EF4444', fontSize: 14, marginTop: 8, textAlign: 'center', paddingHorizontal: 20 },
-  closeBtnLarge: { marginTop: 16, backgroundColor: '#2F5BEA', borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10 },
+  closeBtnLarge: { marginTop: 16, backgroundColor: C.primary, borderRadius: 12, paddingHorizontal: 24, paddingVertical: 10 },
   closeBtnLargeText: { color: '#fff', fontWeight: '600' },
 
   // Header
-  header: { backgroundColor: '#2F5BEA', paddingHorizontal: 14, paddingVertical: 16 },
-  headerContent: { flexDirection: 'row', gap: 12, paddingRight: 36 },
-  avatar: { width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
-  avatarInitial: { color: '#fff', fontSize: 26, fontWeight: '700' },
-  headerInfo: { flex: 1 },
-  tutorName: { color: '#fff', fontWeight: '700', fontSize: 20, marginBottom: 4 },
-  badgeRow: { flexDirection: 'row', gap: 6, marginBottom: 6 },
-  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 99 },
-  badgeText: { color: '#fff', fontSize: 11 },
-  ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  header: { backgroundColor: '#FFFFFF', paddingHorizontal: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: C.border },
+  headerContent: { width: '100%', maxWidth: 760, alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 10, paddingRight: 36 },
+  avatar: { width: 48, height: 48, borderRadius: 24, backgroundColor: C.primarySoft, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
+  avatarInitial: { color: C.text, fontSize: 20, fontWeight: '700' },
+  headerInfo: { flex: 1, minWidth: 0 },
+  tutorName: { color: C.text, fontWeight: '700', fontSize: 17, marginBottom: 3 },
+  badgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 4 },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: C.primarySoft, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 99 },
+  badgeText: { color: C.text, fontSize: 11 },
+  ratingRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: 6 },
   starsRow: { flexDirection: 'row', gap: 2 },
-  ratingText: { color: '#fff', fontSize: 13 },
-  sessionsText: { color: 'rgba(255,255,255,0.7)', fontSize: 12 },
-  closeBtn: { position: 'absolute', top: 16, right: 14, padding: 6 },
+  ratingText: { color: C.text, fontSize: 13 },
+  sessionsText: { color: C.textMuted, fontSize: 12 },
+  closeBtn: { position: 'absolute', top: 8, right: 8, padding: 6 },
 
   scrollContent: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: 12, paddingBottom: 16 },
 
   // Stats
-  statsGrid: { flexDirection: 'row', gap: 8, marginBottom: 12 },
-  statCard: { flex: 1, alignItems: 'center', padding: 10, borderRadius: 12 },
-  statValue: { fontSize: 18, fontWeight: '700', marginTop: 4 },
-  statLabel: { fontSize: 10, color: '#6B7280', marginTop: 2 },
+  statsGrid: { flexDirection: 'row', gap: 6, marginBottom: 10 },
+  statCard: { flex: 1, minWidth: 0, alignItems: 'center', paddingVertical: 8, paddingHorizontal: 4, borderRadius: 10 },
+  statValue: { fontSize: 15, fontWeight: '700', marginTop: 3 },
+  statLabel: { fontSize: 10, color: C.textMuted, marginTop: 2 },
 
   // Section accordion
-  sectionCard: { backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#E6EAF2', marginBottom: 8, overflow: 'hidden' },
-  sectionBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 14, paddingVertical: 14 },
+  sectionCard: { backgroundColor: '#fff', borderRadius: radius.lg, borderWidth: 1, borderColor: C.border, marginBottom: 8, overflow: 'hidden', ...shadow },
+  sectionBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 11 },
   sectionBtnLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { fontWeight: '700', fontSize: 15, color: '#111827' },
-  sectionBody: { paddingHorizontal: 14, paddingBottom: 14, borderTopWidth: 1, borderTopColor: '#F3F5FA' },
+  sectionTitle: { fontWeight: '700', fontSize: 14, color: C.text },
+  sectionBody: { paddingHorizontal: 12, paddingBottom: 12, borderTopWidth: 1, borderTopColor: C.tile },
 
   subLabel: { fontSize: 12, fontWeight: '600', color: '#374151', marginBottom: 4, marginTop: 8 },
   bodyText: { fontSize: 13, color: '#4B5563', lineHeight: 19 },
-  emptyText: { fontSize: 13, color: '#9CA3AF', fontStyle: 'italic' },
+  emptyText: { fontSize: 13, color: C.textSubtle, fontStyle: 'italic' },
   subsection: { marginTop: 10 },
-  philosophyBlock: { marginTop: 12, backgroundColor: '#F6F8FC', borderRadius: 12, padding: 10 },
+  philosophyBlock: { marginTop: 12, backgroundColor: C.bg, borderRadius: 12, padding: 10 },
 
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 },
-  chipBlue: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#E8EEFD', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
-  chipBlueText: { color: '#1E45C8', fontSize: 12, fontWeight: '500' },
-  chipGreen: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#E6F7EF', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
+  chipBlue: { flexDirection: 'row', alignItems: 'center', backgroundColor: C.primarySoft, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
+  chipBlueText: { color: C.primaryDark, fontSize: 12, fontWeight: '500' },
+  chipGreen: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: C.successSoft, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
   chipGreenText: { color: '#14532D', fontSize: 12, fontWeight: '500' },
-  chipPurple: { backgroundColor: '#E8EEFD', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
-  chipPurpleText: { color: '#1E45C8', fontSize: 12 },
+  chipPurple: { backgroundColor: C.primarySoft, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
+  chipPurpleText: { color: C.primaryDark, fontSize: 12 },
 
   infoRow: { flexDirection: 'row', gap: 10, alignItems: 'flex-start', marginTop: 10 },
   infoRowText: { flex: 1 },
 
   // Actions
-  actions: { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#F3F5FA', paddingHorizontal: 14, paddingVertical: 12, gap: 8 },
-  messageBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#2F5BEA', borderRadius: 16, paddingVertical: 14 },
-  messageBtnText: { color: '#fff', fontWeight: '700', fontSize: 15 },
-  closeActionBtn: { backgroundColor: '#F3F5FA', borderRadius: 16, paddingVertical: 12, alignItems: 'center' },
+  actions: { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: C.tile, paddingHorizontal: 12, paddingVertical: 10, gap: 8, flexDirection: 'row' },
+  messageBtn: { flex: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: C.primary, borderRadius: radius.md, paddingVertical: 11 },
+  messageBtnText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+  closeActionBtn: { flex: 1, backgroundColor: C.tile, borderRadius: radius.md, paddingVertical: 11, alignItems: 'center', justifyContent: 'center' },
   closeActionBtnText: { color: '#374151', fontWeight: '600', fontSize: 14 },
 });
 

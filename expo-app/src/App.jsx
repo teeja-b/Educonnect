@@ -27,10 +27,9 @@ import {
 } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator, Alert, Modal, Platform, SafeAreaView,
+    ActivityIndicator, Alert, AppState, Modal, Platform, SafeAreaView,
     ScrollView,
     StatusBar, StyleSheet,
-    Text,
     TextInput,
     TouchableOpacity,
     View
@@ -40,11 +39,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import io from 'socket.io-client';
 import Notifications from "./notifications";
 
-import { initializeFCM, playRingtone, registerNotificationHandler, stopRingtone } from './firebaseConfig';
+import {
+    getActiveChatPartner, initializeFCM, isInCall, playRingtone, registerNotificationHandler, registerPushToken,
+    setupNotificationChannels, showLocalNotification, stopRingtone,
+} from './firebaseConfig';
 import { API_URL } from './utils/config';
 import { storage } from './utils/storage';
 import {
-    Avatar, Button, Card, EmptyState, InfoTile, PAGE_WIDTH, Pill, SectionDivider, TileGrid,
+    Avatar, Button, Card, CardHeader, EmptyState, InfoTile, PAGE_WIDTH, Pill, SectionDivider, Text, TileGrid, useCompact,
     colors, font, radius, shadow, ui,
 } from './theme';
 // ── Lazy-loaded screens (modal-style) ──────────────────────────────────────
@@ -76,13 +78,20 @@ const gutter = (inner = 16) =>
 const EduConnectApp = () => {
     useEffect(() => {
         // Wake up the server the moment app opens
-        fetch('https://hult-663884308553.europe-west9.run.app/api/health').catch(() => { });
+        fetch(`${API_URL}/api/health`).catch(() => { });
     }, []);
     const insets = useSafeAreaInsets();
+    const compact = useCompact();''
+    console.log('API_URL in use:', API_URL);
 
     // ── Refs ────────────────────────────────────────────────────────────────
     const appSocketRef = useRef(null);
     const nativeCallActiveRef = useRef(false);
+    const incomingCallRef = useRef(null);     // mirror of incomingCallData for socket handlers
+    const currentViewRef = useRef('home');
+    const myUserIdRef = useRef(null);
+    const ringTimeoutRef = useRef(null);
+    const toastTimerRef = useRef(null);
     const pendingAutoJoinRef = useRef(null);
     const [appSocket, setAppSocket] = useState(null);
     // ── State ────────────────────────────────────────────────────────────────
@@ -117,9 +126,28 @@ const EduConnectApp = () => {
     const [offlineCourses, setOfflineCourses] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [aiMatching, setAiMatching] = useState(false);
+    const [matcherMode, setMatcherMode] = useState('survey'); // 'survey' | 'prompt'
     const [studentProfileForMatching, setStudentProfileForMatching] = useState(null);
     const [dashProfile, setDashProfile] = useState(null);   // student survey profile for the home card
     const [userName, setUserName] = useState('');
+    const [toast, setToast] = useState(null);   // in-app notification banner
+
+    useEffect(() => { incomingCallRef.current = incomingCallData; }, [incomingCallData]);
+    useEffect(() => { currentViewRef.current = currentView; }, [currentView]);
+
+    // Clears the incoming-call screen and stops ringing (answered, declined,
+    // cancelled by the caller, or timed out).
+    const clearIncomingCall = useCallback(() => {
+        clearTimeout(ringTimeoutRef.current);
+        stopRingtone();
+        setIncomingCallData(null);
+    }, []);
+
+    const showToast = useCallback((t) => {
+        clearTimeout(toastTimerRef.current);
+        setToast(t);
+        toastTimerRef.current = setTimeout(() => setToast(null), 5000);
+    }, []);
 
     // ── Load Inter on the web ────────────────────────────────────────────────
     useEffect(() => {
@@ -172,7 +200,35 @@ const EduConnectApp = () => {
     }, []);
     useEffect(() => {
         registerNotificationHandler();
+        setupNotificationChannels();
     }, []);
+
+    // ── Foreground / background ──────────────────────────────────────────────
+    // When the app goes to the background the socket is disconnected, so the
+    // server immediately sees this user as offline and sends a PUSH for calls
+    // and messages. Before, the socket looked connected for up to a minute
+    // after closing the app; the server sent the call over that dead socket
+    // instead of as a push, so nothing appeared on the phone.
+    // (Kept connected during a call so the call isn't dropped.)
+    useEffect(() => {
+        if (Platform.OS === 'web') return;
+        const sub = AppState.addEventListener('change', (state) => {
+            const socket = appSocketRef.current;
+            if (state === 'background') {
+                if (socket?.connected && !isInCall() && !incomingCallRef.current) {
+                    console.log('🌙 App in background — disconnecting socket so calls arrive as push');
+                    socket.disconnect();
+                }
+            } else if (state === 'active') {
+                if (socket && !socket.connected) {
+                    console.log('☀️ App active — reconnecting socket');
+                    socket.connect();
+                }
+                if (isAuthenticated) registerPushToken();
+            }
+        });
+        return () => sub?.remove?.();
+    }, [isAuthenticated]);
     // ── FCM init ─────────────────────────────────────────────────────────────
     // Wrap this entire useEffect:
     useEffect(() => {
@@ -181,6 +237,7 @@ const EduConnectApp = () => {
             initializeFCM((notification) => {
                 console.log('📨 FCM message:', notification);
             });
+            // (Foreground pushes are shown by the notification handler in firebaseConfig.)
         } catch (e) {
             console.log('FCM not available:', e);
         }
@@ -205,7 +262,7 @@ const EduConnectApp = () => {
                 setCurrentView('chat');
             }
         });
-        return () => sub.remove();
+        return () => sub?.remove?.();
     }, []);
 
     // ── Socket.IO for incoming calls ─────────────────────────────────────────
@@ -221,6 +278,8 @@ const EduConnectApp = () => {
             const userId = user?.id || Number(await storage.getItem('userId'));
 
             if (!userId || cancelled) return; // Don't connect if logged out mid-load
+
+            myUserIdRef.current = String(userId);
 
             socketInstance = io(API_URL, {
                 auth: { userId },
@@ -245,16 +304,89 @@ const EduConnectApp = () => {
 
             socketInstance.on('incoming_video_call', (callData) => {
                 if (nativeCallActiveRef.current) return;
-                playRingtone(callData.callerName || 'Someone');
+                const callerName = callData.callerName || 'Unknown Caller';
+                playRingtone(callerName);
                 setIncomingCallData({
                     meetingId: callData.meetingId,
                     joinUrl: callData.joinUrl,
-                    callerName: callData.callerName || 'Unknown Caller',
+                    callerName,
                     callerUserId: callData.callerId,
                     callerTutorProfileId: callData.callerTutorProfileId || null,
                     callerStudentId: callData.callerStudentId || null,
                 });
+
+                // App in the background / tab hidden → system notification too
+                if (AppState.currentState !== 'active' || (Platform.OS === 'web' && typeof document !== 'undefined' && document.hidden)) {
+                    showLocalNotification({
+                        title: 'Incoming voice call',
+                        body: `${callerName} is calling you`,
+                        channelId: 'calls',
+                        data: { type: 'call', meetingId: callData.meetingId, callerName, callerId: callData.callerId, tag: callData.meetingId },
+                    });
+                }
+
+                // Stop ringing if nobody answers
+                clearTimeout(ringTimeoutRef.current);
+                ringTimeoutRef.current = setTimeout(() => {
+                    const cur = incomingCallRef.current;
+                    if (cur && cur.meetingId === callData.meetingId) {
+                        clearIncomingCall();
+                        showToast({ kind: 'call', title: 'Missed call', body: `from ${callerName}` });
+                    }
+                }, 45_000);
             });
+
+            // The caller hung up (or the call ended/was declined elsewhere) before
+            // this person answered → stop ringing and close the incoming screen.
+            const onCallGone = (data = {}) => {
+                const cur = incomingCallRef.current;
+                if (!cur) return;
+                if (data.meetingId && data.meetingId !== cur.meetingId) return;
+                console.log('📵 Incoming call cancelled by caller:', cur.meetingId);
+                clearIncomingCall();
+                showToast({ kind: 'call', title: 'Missed call', body: `from ${cur.callerName}` });
+            };
+            ['call_ended', 'call_cancelled', 'call_canceled', 'call_missed', 'video_call_ended'].forEach((ev) =>
+                socketInstance.on(ev, onCallGone)
+            );
+
+            // New message → in-app banner (or a system notification when the app
+            // is in the background), unless that chat is already open.
+            const onMessage = (msg = {}) => {
+                const senderId = String(msg.sender_id ?? msg.senderId ?? '');
+                if (!senderId || senderId === myUserIdRef.current) return;
+                const appActive = AppState.currentState === 'active' &&
+                    !(Platform.OS === 'web' && typeof document !== 'undefined' && document.hidden);
+                if (appActive && currentViewRef.current === 'chat' && getActiveChatPartner() === senderId) return;
+
+                const title = msg.sender_name || msg.senderName || 'New message';
+                const body = (msg.text || msg.message || msg.content || '').slice(0, 140) || 'Sent you a message';
+                const convId = msg.conversation_db_id ?? msg.conversationDbId ?? (typeof msg.conversation_id === 'number' ? msg.conversation_id : null);
+                if (appActive) {
+                    showToast({ kind: 'message', title, body, conversationId: convId });
+                } else {
+                    showLocalNotification({
+                        title, body, channelId: 'messages',
+                        data: { type: 'message', conversationId: convId },
+                        onClick: () => { if (convId) setOpenConversationId(convId); setCurrentView('chat'); },
+                    });
+                }
+            };
+            // Different backend versions use different event names; a message is
+            // only handled once per id.
+            const seen = new Set();
+            const onMessageOnce = (msg = {}) => {
+                const id = msg.id ?? msg.messageId ?? msg.message_id;
+                if (id != null) {
+                    if (seen.has(String(id))) return;
+                    seen.add(String(id));
+                    if (seen.size > 200) seen.clear();
+                }
+                onMessage(msg);
+            };
+            ['receive_message', 'new_message', 'message_notification', 'new_message_notification'].forEach((ev) =>
+                socketInstance.on(ev, onMessageOnce)
+            );
         })();
 
         // Cleanup function prevents the "closed before established" error
@@ -320,39 +452,42 @@ const EduConnectApp = () => {
     }, [isAuthenticated, userType]);
 
     // ── Handlers ─────────────────────────────────────────────────────────────
+    // Clears the session and returns to the home screen. Used by logout
+    // and after an account is deleted.
+    const clearSession = async () => {
+        setMenuOpen(false);
+        setIsAuthenticated(false);
+        setUserType(null);
+        setCurrentView('home');
+        setIncomingCallData(null);
+        setOpenConversationId(null);
+        setPendingAutoJoin(null);
+
+        if (appSocketRef.current) {
+            appSocketRef.current.removeAllListeners();
+            appSocketRef.current.disconnect();
+            appSocketRef.current = null;
+            setAppSocket(null);
+        }
+
+        try {
+            await Promise.all([
+                storage.removeItem('token'),
+                storage.removeItem('userType'),
+                storage.removeItem('user'),
+                storage.removeItem('userId'),
+                storage.removeItem('tutorProfileId'),
+                storage.removeItem('profileComplete'),
+                storage.removeItem('offlineCourses'),
+            ]);
+        } catch (e) {
+            console.warn('Storage clear failed:', e);
+        }
+    };
+
     const handleLogout = async () => {
         const { Platform } = require('react-native');
-
-        const doLogout = async () => {
-            setMenuOpen(false);
-            setIsAuthenticated(false);
-            setUserType(null);
-            setCurrentView('home');
-            setIncomingCallData(null);
-            setOpenConversationId(null);
-            setPendingAutoJoin(null);
-
-            if (appSocketRef.current) {
-                appSocketRef.current.removeAllListeners();
-                appSocketRef.current.disconnect();
-                appSocketRef.current = null;
-                setAppSocket(null);
-            }
-
-            try {
-                await Promise.all([
-                    storage.removeItem('token'),
-                    storage.removeItem('userType'),
-                    storage.removeItem('user'),
-                    storage.removeItem('userId'),
-                    storage.removeItem('tutorProfileId'),
-                    storage.removeItem('profileComplete'),
-                    storage.removeItem('offlineCourses'),
-                ]);
-            } catch (e) {
-                console.warn('Storage clear failed:', e);
-            }
-        };
+        const doLogout = clearSession;
 
         if (Platform.OS === 'web') {
             if (window.confirm('Are you sure you want to log out?')) {
@@ -366,19 +501,34 @@ const EduConnectApp = () => {
         }
     };
 
-    const handleAIMatching = async () => {
+    // mode: 'survey' (ranked from survey answers) or 'prompt' (student describes
+    // their needs in free text). Prompt mode doesn't require the survey.
+    const handleAIMatching = async (mode = 'survey') => {
         if (!isAuthenticated) {
             Alert.alert('Login required', 'Please log in first to use AI matching!');
             setShowLogin(true);
             return;
         }
+        setMatcherMode(mode);
         try {
             const token = await storage.getItem('token');
             const response = await fetch(`${API_URL}/api/student/profile`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            if (!response.ok) throw new Error('Failed to fetch profile');
+            if (!response.ok) {
+                if (mode === 'prompt') {
+                    setStudentProfileForMatching(null);
+                    setShowAIMatcherModal(true);
+                    return;
+                }
+                throw new Error('Failed to fetch profile');
+            }
             const data = await response.json();
+            if (!data.profile?.survey_completed && mode === 'prompt') {
+                setStudentProfileForMatching(null);
+                setShowAIMatcherModal(true);
+                return;
+            }
             if (!data.profile?.survey_completed) {
                 Alert.alert('Survey required', 'Please complete your profile survey first!');
                 setShowSurvey(true);
@@ -405,8 +555,12 @@ const EduConnectApp = () => {
                 // ← ADD THESE TWO:
                 tutor_gender_preference: profile.tutor_gender_preference || 'no_preference',
                 selected_goals: safeParseJSON(profile.selected_goals, []),
+                // Mauritian academic context (only sent if the survey has collected them)
+                ...(profile.academic_level ? { academic_level: profile.academic_level } : {}),
+                ...(profile.exam_board ? { exam_board: profile.exam_board } : {}),
+                ...(profile.max_hourly_rate != null ? { max_hourly_rate: profile.max_hourly_rate, budget_currency: profile.budget_currency || 'MUR' } : {}),
             };
-            if (studentProfile.preferred_subjects.length === 0) {
+            if (studentProfile.preferred_subjects.length === 0 && mode !== 'prompt') {
                 Alert.alert('No subjects', 'Please add at least one subject to your profile!');
                 setShowSurvey(true);
                 return;
@@ -469,7 +623,7 @@ const EduConnectApp = () => {
                         <>
                             <View style={styles.rolePill}>
                                 <View style={styles.greenDot} />
-                                <Text style={styles.rolePillText}>{userType || 'User'}</Text>
+                                <Text style={styles.rolePillText} numberOfLines={1}>{userType || 'User'}</Text>
                             </View>
                             <TouchableOpacity onPress={() => setMenuOpen((v) => !v)} style={styles.menuBtn}>
                                 {menuOpen ? <X size={20} color={colors.text} /> : <Menu size={20} color={colors.text} />}
@@ -524,7 +678,7 @@ const EduConnectApp = () => {
                 <View style={[styles.tabIconWrap, active && styles.tabIconWrapActive]}>
                     <Icon size={20} color={active ? colors.primary : colors.textSubtle} strokeWidth={active ? 2.3 : 1.9} />
                 </View>
-                <Text style={[styles.tabLabel, active && styles.tabLabelActive]}>{label}</Text>
+                <Text style={[styles.tabLabel, active && styles.tabLabelActive]} numberOfLines={1}>{label}</Text>
             </TouchableOpacity>
         );
         const tab = (view, icon, label) => (
@@ -574,6 +728,7 @@ const EduConnectApp = () => {
                             <TouchableOpacity
                                 style={[styles.callBtn, { backgroundColor: colors.danger }]}
                                 onPress={() => {
+                                    clearTimeout(ringTimeoutRef.current);
                                     stopRingtone();
 
                                     const { meetingId, joinUrl, callerName, callerUserId,
@@ -611,6 +766,7 @@ const EduConnectApp = () => {
                             <TouchableOpacity
                                 style={[styles.callBtn, { backgroundColor: colors.success }]}
                                 onPress={() => {
+                                    clearTimeout(ringTimeoutRef.current);
                                     stopRingtone();
 
                                     const { meetingId, joinUrl, callerName, callerUserId,
@@ -677,7 +833,7 @@ const EduConnectApp = () => {
     );
 
     const WelcomeScreen = () => (
-        <ScrollView contentContainerStyle={styles.padded}>
+        <ScrollView contentContainerStyle={[styles.padded, compact && styles.paddedCompact]}>
             <Card style={styles.heroCard}>
                 <View style={styles.heroMark}>
                     <GraduationCap size={30} color="#fff" strokeWidth={2} />
@@ -711,16 +867,20 @@ const EduConnectApp = () => {
         const subjects = asList(p?.preferred_subjects);
         return (
             <Card>
-                <View style={styles.profileHead}>
-                    <Avatar name={userName || 'Student'} size={46} />
-                    <View style={styles.headText}>
-                        <Text style={styles.profileTitle}>{userName ? userName : 'Your profile'}</Text>
-                        <Text style={styles.profileSub}>
-                            Student{p?.skill_level ? ` · ${cap(p.skill_level)}` : ''}
-                        </Text>
-                    </View>
-                    {surveyDone && <Pill icon={Zap} label="Smart matching" />}
-                </View>
+                <CardHeader
+                    leading={
+                        <Avatar name={userName || 'Student'} size={compact ? 40 : 46} />
+                    }
+                    text={
+                        <>
+                            <Text style={styles.profileTitle}>{userName ? userName : 'Your profile'}</Text>
+                            <Text style={styles.profileSub}>
+                                Student{p?.skill_level ? ` · ${cap(p.skill_level)}` : ''}
+                            </Text>
+                        </>
+                    }
+                    trailing={surveyDone && <Pill icon={Zap} label="Smart matching" />}
+                />
 
                 {surveyDone ? (
                     <TileGrid>
@@ -749,15 +909,15 @@ const EduConnectApp = () => {
     const StatTile = ({ icon: Icon, label, value }) => (
         <View style={styles.statTile}>
             <View style={styles.statIcon}><Icon size={18} color={colors.primary} strokeWidth={2} /></View>
-            <View>
-                <Text style={styles.statValue}>{value}</Text>
-                <Text style={styles.statLabel}>{label}</Text>
+            <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={styles.statValue} numberOfLines={1}>{value}</Text>
+                <Text style={styles.statLabel} numberOfLines={1}>{label}</Text>
             </View>
         </View>
     );
 
     const LoggedInDashboard = () => (
-        <ScrollView contentContainerStyle={styles.padded}>
+        <ScrollView contentContainerStyle={[styles.padded, compact && styles.paddedCompact]}>
             {userType === 'student' ? (
                 <>
                     <StudentProfileCard />
@@ -772,21 +932,30 @@ const EduConnectApp = () => {
                             <View style={{ flex: 1 }}>
                                 <Text style={ui.h3}>Find your tutor matches</Text>
                                 <Text style={[ui.muted, { marginTop: 2 }]}>
-                                    Tutors ranked by subject, style and schedule fit.
+                                    Use your survey answers, or describe what you need in your own words.
                                 </Text>
                             </View>
                         </View>
-                        <Button
-                            label={aiMatching ? 'Finding matches…' : 'See my matches'}
-                            icon={Zap}
-                            loading={aiMatching}
-                            onPress={handleAIMatching}
-                            style={{ marginTop: 16 }}
-                        />
+                        <View style={[styles.matchBtnRow, compact && { flexDirection: 'column' }]}>
+                            <Button
+                                label={aiMatching ? 'Finding matches…' : 'See my matches'}
+                                icon={Zap}
+                                loading={aiMatching}
+                                onPress={() => handleAIMatching('survey')}
+                                style={{ flex: compact ? undefined : 1 }}
+                            />
+                            <Button
+                                label="Describe what you need"
+                                icon={Sparkles}
+                                variant="soft"
+                                onPress={() => handleAIMatching('prompt')}
+                                style={{ flex: compact ? undefined : 1 }}
+                            />
+                        </View>
                     </Card>
 
                     <View style={styles.statRow}>
-                        <StatTile icon={BookOpen} label="Courses available" value={courses.length} />
+                        <StatTile icon={BookOpen} label="Courses" value={courses.length} />
                         <StatTile icon={Users} label="Tutors" value={tutors.length} />
                     </View>
 
@@ -807,14 +976,18 @@ const EduConnectApp = () => {
             ) : (
                 <>
                     <Card>
-                        <View style={styles.profileHead}>
-                            <Avatar name={userName || 'Tutor'} size={46} color={colors.success} />
-                            <View style={styles.headText}>
-                                <Text style={styles.profileTitle}>{userName || 'Your profile'}</Text>
-                                <Text style={styles.profileSub}>Tutor</Text>
-                            </View>
-                            <Pill icon={User} label="Edit profile" onPress={() => setShowTutorProfile(true)} />
-                        </View>
+                        <CardHeader
+                            leading={
+                                <Avatar name={userName || 'Tutor'} size={compact ? 40 : 46} color={colors.success} />
+                            }
+                            text={
+                                <>
+                                    <Text style={styles.profileTitle}>{userName || 'Your profile'}</Text>
+                                    <Text style={styles.profileSub}>Tutor</Text>
+                                </>
+                            }
+                            trailing={<Pill icon={User} label="Edit profile" onPress={() => setShowTutorProfile(true)} />}
+                        />
                         <TileGrid>
                             <InfoTile icon={BookOpen} label="Courses" value={String(tutorStats.totalCourses)} />
                             <InfoTile icon={Users} label="Students" value={String(tutorStats.totalStudents)} />
@@ -861,23 +1034,27 @@ const EduConnectApp = () => {
                 { icon: Calendar, label: 'Schedule', value: 'Set your availability' },
             ];
         return (
-            <ScrollView contentContainerStyle={styles.padded}>
+            <ScrollView contentContainerStyle={[styles.padded, compact && styles.paddedCompact]}>
                 <TouchableOpacity onPress={() => setUserType(null)} style={styles.backRow}>
                     <ChevronLeft size={18} color={colors.textMuted} />
                     <Text style={styles.backText}>Back</Text>
                 </TouchableOpacity>
                 <Card>
-                    <View style={styles.profileHead}>
-                        <View style={[styles.actionIcon, { backgroundColor: isStudent ? colors.primary : colors.success }]}>
-                            {isStudent ? <GraduationCap size={22} color="#fff" /> : <Users size={22} color="#fff" />}
-                        </View>
-                        <View style={styles.headText}>
-                            <Text style={styles.profileTitle}>{isStudent ? 'Learn at your pace' : 'Teach what you know'}</Text>
-                            <Text style={styles.profileSub}>
-                                {isStudent ? 'Tutoring matched to how you learn' : 'Reach students who need your subjects'}
-                            </Text>
-                        </View>
-                    </View>
+                    <CardHeader
+                        leading={
+                            <View style={[styles.actionIcon, { backgroundColor: isStudent ? colors.primary : colors.success }]}>
+                                {isStudent ? <GraduationCap size={22} color="#fff" /> : <Users size={22} color="#fff" />}
+                            </View>
+                        }
+                        text={
+                            <>
+                                <Text style={styles.profileTitle}>{isStudent ? 'Learn at your pace' : 'Teach what you know'}</Text>
+                                <Text style={styles.profileSub}>
+                                    {isStudent ? 'Tutoring matched to how you learn' : 'Reach students who need your subjects'}
+                                </Text>
+                            </>
+                        }
+                    />
                     <TileGrid>
                         {features.map((f) => <InfoTile key={f.label} icon={f.icon} label={f.label} value={f.value} />)}
                     </TileGrid>
@@ -914,12 +1091,13 @@ const EduConnectApp = () => {
         );
 
         return (
-            <ScrollView contentContainerStyle={styles.padded}>
+            <ScrollView contentContainerStyle={[styles.padded, compact && styles.paddedCompact]}>
                 <Text style={styles.pageTitle}>Courses</Text>
                 <Text style={styles.pageSub}>{allCourses.length} available</Text>
                 <View style={styles.searchRow}>
                     <Search size={18} color={colors.textSubtle} />
                     <TextInput
+                        maxFontSizeMultiplier={1}
                         style={styles.searchInput}
                         placeholder="Search courses"
                         placeholderTextColor={colors.textSubtle}
@@ -995,28 +1173,32 @@ const EduConnectApp = () => {
         const prerequisites = safeParseArr(courseDetails.prerequisites);
 
         return (
-            <ScrollView contentContainerStyle={styles.padded}>
+            <ScrollView contentContainerStyle={[styles.padded, compact && styles.paddedCompact]}>
                 <TouchableOpacity onPress={() => setCurrentView('courses')} style={styles.backRow}>
                     <ChevronLeft size={18} color={colors.textMuted} />
                     <Text style={styles.backText}>Courses</Text>
                 </TouchableOpacity>
                 <Card>
-                    <View style={styles.profileHead}>
-                        <View style={[styles.actionIcon, { backgroundColor: colors.primary }]}>
-                            <BookOpen size={20} color="#fff" />
-                        </View>
-                        <View style={styles.headText}>
-                            <Text style={styles.profileTitle}>{courseDetails.title}</Text>
-                            <Text style={styles.profileSub}>by {courseDetails.tutor_name}</Text>
-                        </View>
-                        {courseDetails.category ? <Pill label={courseDetails.category} /> : null}
-                    </View>
+                    <CardHeader
+                        leading={
+                            <View style={[styles.actionIcon, { backgroundColor: colors.primary }]}>
+                                <BookOpen size={20} color="#fff" />
+                            </View>
+                        }
+                        text={
+                            <>
+                                <Text style={styles.profileTitle}>{courseDetails.title}</Text>
+                                <Text style={styles.profileSub}>by {courseDetails.tutor_name}</Text>
+                            </>
+                        }
+                        trailing={courseDetails.category ? <Pill label={courseDetails.category} /> : null}
+                    />
                     <TileGrid>
                         <InfoTile icon={TrendingUp} label="Level" value={cap(courseDetails.level)} />
                         <InfoTile icon={Clock} label="Duration" value={courseDetails.duration || '—'} />
                         <InfoTile icon={Users} label="Students" value={String(courseDetails.total_students || 0)} />
                         {courseDetails.price !== undefined && (
-                            <InfoTile icon={Zap} label="Price" value={courseDetails.price === 0 ? 'Free' : `$${courseDetails.price}`} />
+                            <InfoTile icon={Zap} label="Price" value={courseDetails.price === 0 ? 'Free' : `Rs ${Number(courseDetails.price).toLocaleString('en-US')}`} />
                         )}
                     </TileGrid>
                 </Card>
@@ -1083,7 +1265,7 @@ const EduConnectApp = () => {
         }
 
         return (
-            <ScrollView contentContainerStyle={styles.padded}>
+            <ScrollView contentContainerStyle={[styles.padded, compact && styles.paddedCompact]}>
                 <Text style={styles.pageTitle}>My courses</Text>
                 <Text style={styles.pageSub}>
                     {enrolledCourses.length} enrolled
@@ -1098,78 +1280,25 @@ const EduConnectApp = () => {
                 ) : (
                     enrolledCourses.map((e) => (
                         <Card key={e.id}>
-                            <View style={styles.profileHead}>
-                                <View style={[styles.actionIcon, { backgroundColor: e.completed ? colors.success : colors.primary }]}>
-                                    <BookOpen size={20} color="#fff" />
-                                </View>
-                                <View style={styles.headText}>
-                                    <Text style={styles.courseTitle}>{e.course_title}</Text>
-                                    <Text style={styles.courseSub}>by {e.tutor_name}</Text>
-                                </View>
-                                {e.completed ? <Pill icon={CheckCircle} label="Completed" tone="success" /> : <Pill label="In progress" />}
-                            </View>
+                            <CardHeader
+                                leading={
+                                    <View style={[styles.actionIcon, { backgroundColor: e.completed ? colors.success : colors.primary }]}>
+                                        <BookOpen size={20} color="#fff" />
+                                    </View>
+                                }
+                                text={
+                                    <>
+                                        <Text style={styles.courseTitle}>{e.course_title}</Text>
+                                        <Text style={styles.courseSub}>by {e.tutor_name}</Text>
+                                    </>
+                                }
+                                trailing={e.completed ? <Pill icon={CheckCircle} label="Completed" tone="success" /> : <Pill label="In progress" />}
+                            />
                             <Button label="Open materials" variant="soft" icon={FileText} onPress={() => setViewingMaterials(e)} />
                         </Card>
                     ))
                 )}
             </ScrollView>
-        );
-    };
-
-    // ── Chat View (Student or Tutor) ──────────────────────────────────────────
-
-    const ChatView = ({ appSocket, openConversationId, pendingAutoJoin, onConversationOpened, onCallEnded }) => {
-        const [userData, setUserData] = useState(null);
-        const [token, setToken] = useState(null);
-
-        useEffect(() => {
-            (async () => {
-                const userStr = await storage.getItem('user');
-                const user = userStr ? JSON.parse(userStr) : null;
-                const userId = user?.id || Number(await storage.getItem('userId'));
-                const userName = user?.full_name || (await storage.getItem('userName')) || 'User';
-                const uType = user?.user_type || (await storage.getItem('userType'));
-                const tutorProfileId = user?.tutor_profile_id || Number(await storage.getItem('tutorProfileId')) || null;
-                const authToken = await storage.getItem('token');
-                setToken(authToken);
-                setUserData({ userId, userName, uType, tutorProfileId });
-            })();
-        }, []);
-
-        if (!userData) return <LoadingSpinner />;
-        const autoJoin = pendingAutoJoin;
-
-        if (userData.uType === 'student') {
-            return (
-                <MessagingVideoChat
-                    appSocket={appSocket}
-                    currentUserId={String(userData.userId)}
-                    openConversationId={openConversationId}
-                    onConversationOpened={onConversationOpened}
-                    autoJoinMeetingId={autoJoin?.meetingId || null}
-                    autoJoinUrl={autoJoin?.joinUrl || null}
-                    callerName={autoJoin?.callerName || null}
-                    callerTutorProfileId={autoJoin?.callerTutorProfileId || null}
-                    onCallEnded={onCallEnded}
-                    authToken={token}
-                />
-            );
-        }
-        return (
-            <TutorMessagingView
-                appSocket={appSocket}
-                currentTutorUserId={String(userData.userId)}
-                tutorProfileId={userData.tutorProfileId}
-                tutorName={userData.userName}
-                openConversationId={openConversationId}
-                onConversationOpened={onConversationOpened}
-                autoJoinMeetingId={autoJoin?.meetingId || null}
-                autoJoinUrl={autoJoin?.joinUrl || null}
-                callerName={autoJoin?.callerName || null}
-                callerStudentId={autoJoin?.callerStudentId || null}
-                onCallEnded={onCallEnded}
-                authToken={token}
-            />
         );
     };
 
@@ -1217,6 +1346,36 @@ const EduConnectApp = () => {
 
             {/* Global incoming call modal */}
             <IncomingCallModal />
+
+            {/* In-app notification banner (new messages, missed calls) */}
+            {toast && (
+                <View pointerEvents="box-none" style={[styles.toastWrap, { top: insets.top + 64 }]}>
+                    <TouchableOpacity
+                        activeOpacity={0.9}
+                        style={styles.toast}
+                        onPress={() => {
+                            if (toast.kind === 'message') {
+                                if (toast.conversationId) setOpenConversationId(toast.conversationId);
+                                setCurrentView('chat');
+                            }
+                            setToast(null);
+                        }}
+                    >
+                        <View style={[styles.toastIcon, toast.kind === 'call' && { backgroundColor: colors.dangerSoft }]}>
+                            {toast.kind === 'call'
+                                ? <PhoneOff size={18} color={colors.danger} />
+                                : <MessageSquare size={18} color={colors.primary} />}
+                        </View>
+                        <View style={{ flex: 1, minWidth: 0 }}>
+                            <Text style={styles.toastTitle} numberOfLines={1}>{toast.title}</Text>
+                            <Text style={styles.toastBody} numberOfLines={2}>{toast.body}</Text>
+                        </View>
+                        <TouchableOpacity onPress={() => setToast(null)} hitSlop={10}>
+                            <X size={16} color={colors.textSubtle} />
+                        </TouchableOpacity>
+                    </TouchableOpacity>
+                </View>
+            )}
 
             {/* ── Modal screens ──────────────────────────────── */}
             {showLogin && (
@@ -1281,10 +1440,10 @@ const EduConnectApp = () => {
                 />
             )}
             {showPasswordReset && <PasswordResetPage onClose={() => setShowPasswordReset(false)} />}
-            {showStudentProfile && <StudentProfile onClose={() => setShowStudentProfile(false)} />}
-            {showTutorProfile && <TutorProfile onClose={() => setShowTutorProfile(false)} token={authToken} />}
+            {showStudentProfile && <StudentProfile onClose={() => setShowStudentProfile(false)} onAccountDeleted={() => { setShowStudentProfile(false); clearSession(); }} />}
+            {showTutorProfile && <TutorProfile onClose={() => setShowTutorProfile(false)} token={authToken} onAccountDeleted={() => { setShowTutorProfile(false); clearSession(); }} />}
             {showCourseManager && <TutorCourseManager onClose={() => setShowCourseManager(false)} />}
-            {showAIMatcherModal && studentProfileForMatching && (
+            {showAIMatcherModal && (studentProfileForMatching || matcherMode === 'prompt') && (
                 <Modal visible animationType="slide" statusBarTranslucent>
                     <SafeAreaView style={{
                         flex: 1, backgroundColor: colors.bg,
@@ -1303,6 +1462,7 @@ const EduConnectApp = () => {
                         <AITutorMatcher
                             studentProfile={studentProfileForMatching}
                             studentName={userName}
+                            initialMode={matcherMode}
                             onEditProfile={() => {
                                 setShowAIMatcherModal(false);
                                 setStudentProfileForMatching(null);
@@ -1327,6 +1487,68 @@ const EduConnectApp = () => {
                 </Modal>
             )}
         </View>
+    );
+};
+
+// Defined at module level (not inside EduConnectApp) on purpose: a component
+// declared inside another component is a brand-new type on every parent
+// render, so React unmounted and remounted the whole chat — including
+// VoiceCall — each time the app re-rendered. That tore down the Agora engine
+// in the middle of accepting a call ("Cannot read property 'joinChannel' of null").
+// ── Chat View (Student or Tutor) ──────────────────────────────────────────
+
+const ChatView = ({ appSocket, openConversationId, pendingAutoJoin, onConversationOpened, onCallEnded }) => {
+    const [userData, setUserData] = useState(null);
+    const [token, setToken] = useState(null);
+
+    useEffect(() => {
+        (async () => {
+            const userStr = await storage.getItem('user');
+            const user = userStr ? JSON.parse(userStr) : null;
+            const userId = user?.id || Number(await storage.getItem('userId'));
+            const userName = user?.full_name || (await storage.getItem('userName')) || 'User';
+            const uType = user?.user_type || (await storage.getItem('userType'));
+            const tutorProfileId = user?.tutor_profile_id || Number(await storage.getItem('tutorProfileId')) || null;
+            const authToken = await storage.getItem('token');
+            setToken(authToken);
+            setUserData({ userId, userName, uType, tutorProfileId });
+        })();
+    }, []);
+
+    if (!userData) return <LoadingSpinner />;
+    const autoJoin = pendingAutoJoin;
+
+    if (userData.uType === 'student') {
+        return (
+            <MessagingVideoChat
+                appSocket={appSocket}
+                currentUserId={String(userData.userId)}
+                openConversationId={openConversationId}
+                onConversationOpened={onConversationOpened}
+                autoJoinMeetingId={autoJoin?.meetingId || null}
+                autoJoinUrl={autoJoin?.joinUrl || null}
+                callerName={autoJoin?.callerName || null}
+                callerTutorProfileId={autoJoin?.callerTutorProfileId || null}
+                onCallEnded={onCallEnded}
+                authToken={token}
+            />
+        );
+    }
+    return (
+        <TutorMessagingView
+            appSocket={appSocket}
+            currentTutorUserId={String(userData.userId)}
+            tutorProfileId={userData.tutorProfileId}
+            tutorName={userData.userName}
+            openConversationId={openConversationId}
+            onConversationOpened={onConversationOpened}
+            autoJoinMeetingId={autoJoin?.meetingId || null}
+            autoJoinUrl={autoJoin?.joinUrl || null}
+            callerName={autoJoin?.callerName || null}
+            callerStudentId={autoJoin?.callerStudentId || null}
+            onCallEnded={onCallEnded}
+            authToken={token}
+        />
     );
 };
 
@@ -1357,7 +1579,7 @@ const styles = StyleSheet.create({
     navRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: gutter(16), paddingVertical: 12 },
     navLogo: { flexDirection: 'row', alignItems: 'center', gap: 10 },
     logoMark: { width: 34, height: 34, borderRadius: 10, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
-    navTitle: { fontFamily: font, color: colors.text, fontSize: 18, fontWeight: '800', letterSpacing: -0.2 },
+    navTitle: { fontFamily: font, color: colors.text, fontSize: 17, fontWeight: '800', letterSpacing: -0.2 },
     navActions: { flexDirection: 'row', alignItems: 'center', gap: 8 },
     navGhostBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: radius.sm },
     navGhostText: { fontFamily: font, color: colors.text, fontSize: 14, fontWeight: '600' },
@@ -1379,7 +1601,7 @@ const styles = StyleSheet.create({
     tabBtn: { flex: 1, alignItems: 'center', gap: 3 },
     tabIconWrap: { paddingHorizontal: 16, paddingVertical: 4, borderRadius: radius.pill },
     tabIconWrapActive: { backgroundColor: colors.primarySoft },
-    tabLabel: { fontFamily: font, fontSize: 11, color: colors.textSubtle, fontWeight: '600' },
+    tabLabel: { fontFamily: font, fontSize: 11, textAlign: 'center', color: colors.textSubtle, fontWeight: '600' },
     tabLabelActive: { color: colors.primary, fontWeight: '700' },
 
     // Incoming call
@@ -1394,6 +1616,7 @@ const styles = StyleSheet.create({
 
     // General layout — pages are capped at PAGE_WIDTH and centred on the web
     padded: { width: '100%', maxWidth: PAGE_WIDTH, alignSelf: 'center', padding: 16, paddingTop: 20, paddingBottom: 40 },
+    paddedCompact: { paddingHorizontal: 12, paddingTop: 12 },
     centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
 
     // Welcome
@@ -1407,10 +1630,7 @@ const styles = StyleSheet.create({
     backText: { fontFamily: font, fontSize: 14, fontWeight: '600', color: colors.textMuted },
 
     // Profile card
-    // Wraps the trailing pill onto its own line when the screen is too narrow
-    profileHead: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', columnGap: 14, rowGap: 12, marginBottom: 18 },
-    headText: { flexGrow: 1, flexShrink: 1, flexBasis: 170, minWidth: 0 },
-    profileTitle: { fontFamily: font, fontSize: 19, fontWeight: '700', color: colors.text },
+    profileTitle: { fontFamily: font, fontSize: 17, fontWeight: '700', color: colors.text },
     profileSub: { fontFamily: font, fontSize: 14, color: colors.textMuted, marginTop: 2 },
     surveyPrompt: { backgroundColor: colors.tile, borderRadius: radius.md, padding: 16 },
     editLink: { alignSelf: 'flex-start', marginTop: 14 },
@@ -1418,11 +1638,12 @@ const styles = StyleSheet.create({
 
     // Dashboard
     actionRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+    matchBtnRow: { flexDirection: 'row', gap: 10, marginTop: 16 },
     actionIcon: { width: 44, height: 44, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center' },
     statRow: { flexDirection: 'row', gap: 12, marginBottom: 14 },
-    statTile: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg + 2, padding: 16, ...shadow },
-    statIcon: { width: 38, height: 38, borderRadius: 10, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
-    statValue: { fontFamily: font, fontSize: 20, fontWeight: '800', color: colors.text },
+    statTile: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: 14, ...shadow },
+    statIcon: { width: 34, height: 34, flexShrink: 0, borderRadius: 10, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+    statValue: { fontFamily: font, fontSize: 18, fontWeight: '800', color: colors.text },
     statLabel: { fontFamily: font, fontSize: 12, color: colors.textMuted },
     linkRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 6 },
     linkRowText: { fontFamily: font, flex: 1, fontSize: 15, fontWeight: '600', color: colors.text },
@@ -1449,6 +1670,13 @@ const styles = StyleSheet.create({
     // Course detail
     sectionTitle: { fontFamily: font, fontSize: 16, fontWeight: '700', color: colors.text, marginBottom: 12 },
     checkRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 10 },
+
+    // In-app notification banner
+    toastWrap: { position: 'absolute', left: 0, right: 0, alignItems: 'center', paddingHorizontal: 12, zIndex: 50 },
+    toast: { width: '100%', maxWidth: 480, flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: colors.surface, borderRadius: radius.lg, borderWidth: 1, borderColor: colors.border, padding: 12, ...shadow, ...(Platform.OS === 'web' ? { boxShadow: '0 8px 24px rgba(17,24,39,0.12)' } : { elevation: 6 }) },
+    toastIcon: { width: 36, height: 36, borderRadius: 10, backgroundColor: colors.primarySoft, alignItems: 'center', justifyContent: 'center' },
+    toastTitle: { fontFamily: font, fontSize: 14, fontWeight: '700', color: colors.text },
+    toastBody: { fontFamily: font, fontSize: 13, color: colors.textMuted, marginTop: 1 },
 
     // AI Matcher modal
     modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 14, paddingHorizontal: gutter(16), backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border },

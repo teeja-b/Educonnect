@@ -1,7 +1,30 @@
 // EduConnect design system
 // One place for colours, radii, type and the small building blocks every
 // screen uses (cards, info tiles, pills, section dividers, buttons).
-import { Platform, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator } from 'react-native';
+import { createContext, useContext } from 'react';
+import {
+    ActivityIndicator, Platform, StyleSheet, Text as RNText, TouchableOpacity, View, useWindowDimensions,
+} from 'react-native';
+
+// ── Text that ignores the phone's "large font" setting ───────────────────────
+// Large system font sizes were blowing the layout apart, so text is drawn at
+// the size set in the styles. Raise this (e.g. 1.15) to let it grow a little.
+// Screens import `Text` from here instead of from react-native.
+export const MAX_FONT_SCALE = 1;
+// Also applies the app font (Inter on the web) unless a style sets its own.
+export const Text = ({ style, ...props }) => (
+    <RNText maxFontSizeMultiplier={MAX_FONT_SCALE} {...props} style={[{ fontFamily: font }, style]} />
+);
+
+// ── Screen-size helper ───────────────────────────────────────────────────────
+// "compact" = a normal phone. Uses the width the text actually has once the
+// font scale is taken into account, so big-font phones also get the compact layout.
+export const useCompact = () => {
+    const { width, fontScale } = useWindowDimensions();
+    const scale = Math.min(fontScale || 1, MAX_FONT_SCALE);
+    return width / scale < 520;
+};
+
 
 export const colors = {
     bg: '#F6F8FC',          // app background
@@ -57,23 +80,79 @@ export const tones = {
 
 // ── Primitives ──────────────────────────────────────────────────────────────
 
-export const Card = ({ style, highlighted, children }) => (
-    <View style={[ui.card, highlighted && ui.cardHighlighted, style]}>{children}</View>
-);
-
-// Icon + small label + bold value, on a soft tile (the "Subjects / Level" boxes)
-export const InfoTile = ({ icon: Icon, label, value, style }) => (
-    <View style={[ui.tile, style]}>
-        {Icon ? <Icon size={20} color={colors.primary} strokeWidth={1.8} /> : null}
-        <View style={{ flex: 1 }}>
-            <Text style={ui.tileLabel} numberOfLines={1}>{label}</Text>
-            <Text style={ui.tileValue} numberOfLines={2}>{value}</Text>
+export const Card = ({ style, highlighted, children }) => {
+    const compact = useCompact();
+    return (
+        <View style={[ui.card, compact && { padding: 16, borderRadius: radius.lg }, highlighted && ui.cardHighlighted, style]}>
+            {children}
         </View>
-    </View>
-);
+    );
+};
 
-// Grid of InfoTiles, two per row
-export const TileGrid = ({ children }) => <View style={ui.tileGrid}>{children}</View>;
+// Card header: leading icon/avatar, title + subtitle, optional trailing pill.
+// On phones the trailing pill moves under the subtitle so the title keeps
+// the full width instead of being squeezed into a narrow column.
+export const CardHeader = ({ leading, text, trailing, style }) => {
+    const compact = useCompact();
+    return (
+        <View style={[ui.header, style]}>
+            {leading}
+            <View style={ui.headerText}>
+                {text}
+                {compact && trailing ? <View style={ui.headerTrailingBelow}>{trailing}</View> : null}
+            </View>
+            {!compact && trailing ? <View style={{ flexShrink: 0 }}>{trailing}</View> : null}
+        </View>
+    );
+};
+
+// Icon + small label + bold value (the "Subjects / Level" boxes).
+// Wide screens: two soft tiles per row.
+// Phones: one grouped list — icon, label on the left, value on the right —
+// which keeps each item to a single short line instead of a cramped box.
+const CompactCtx = createContext(false);
+
+export const InfoTile = ({ icon: Icon, label, value, style }) => {
+    const compact = useContext(CompactCtx);
+    if (compact) {
+        return (
+            <View style={[ui.row, style]}>
+                {Icon ? <Icon size={18} color={colors.primary} strokeWidth={1.8} /> : null}
+                <Text style={ui.rowLabel} numberOfLines={1}>{label}</Text>
+                <Text style={ui.rowValue} numberOfLines={2}>{value}</Text>
+            </View>
+        );
+    }
+    return (
+        <View style={[ui.tile, style]}>
+            {Icon ? <Icon size={20} color={colors.primary} strokeWidth={1.8} /> : null}
+            <View style={{ flex: 1, minWidth: 0 }}>
+                <Text style={ui.tileLabel} numberOfLines={1}>{label}</Text>
+                <Text style={ui.tileValue} numberOfLines={2}>{value}</Text>
+            </View>
+        </View>
+    );
+};
+
+export const TileGrid = ({ children }) => {
+    const compact = useCompact();
+    const items = (Array.isArray(children) ? children.flat() : [children]).filter(Boolean);
+    if (compact) {
+        return (
+            <CompactCtx.Provider value>
+                <View style={ui.rowGroup}>
+                    {items.map((child, i) => (
+                        <View key={child?.key ?? i}>
+                            {i > 0 && <View style={ui.rowDivider} />}
+                            {child}
+                        </View>
+                    ))}
+                </View>
+            </CompactCtx.Provider>
+        );
+    }
+    return <View style={ui.tileGrid}>{children}</View>;
+};
 
 export const Pill = ({ icon: Icon, label, tone = 'primary', onPress, style }) => {
     const t = tones[tone] || tones.primary;
@@ -90,7 +169,7 @@ export const Pill = ({ icon: Icon, label, tone = 'primary', onPress, style }) =>
 export const SectionDivider = ({ label }) => (
     <View style={ui.divider}>
         <View style={ui.dividerLine} />
-        <View style={ui.dividerPill}><Text style={ui.dividerText}>{label}</Text></View>
+        <View style={ui.dividerPill}><Text style={ui.dividerText} numberOfLines={1}>{label}</Text></View>
         <View style={ui.dividerLine} />
     </View>
 );
@@ -162,13 +241,22 @@ export const ui = StyleSheet.create({
     },
     cardHighlighted: { borderColor: colors.primaryRing, borderWidth: 1.5 },
 
+    header: { flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 16 },
+    headerText: { flex: 1, minWidth: 0 },
+    headerTrailingBelow: { flexDirection: 'row', marginTop: 8 },
+
     tileGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
     tile: {
-        flexGrow: 1, flexBasis: '46%', minWidth: 140,
+        flexGrow: 1, flexShrink: 1, flexBasis: '44%', minWidth: 0,
         flexDirection: 'row', alignItems: 'center', gap: 12,
         backgroundColor: colors.tile, borderRadius: radius.md,
         paddingHorizontal: 14, paddingVertical: 12,
     },
+    rowGroup: { backgroundColor: colors.tile, borderRadius: radius.md, paddingHorizontal: 14 },
+    row: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 12 },
+    rowDivider: { height: 1, backgroundColor: colors.border },
+    rowLabel: { fontFamily: font, fontSize: 14, color: colors.textMuted, flexShrink: 0 },
+    rowValue: { fontFamily: font, fontSize: 14, fontWeight: '700', color: colors.text, flex: 1, textAlign: 'right' },
     tileLabel: { fontFamily: font, fontSize: 13, color: colors.textMuted },
     tileValue: { fontFamily: font, fontSize: 14, fontWeight: '700', color: colors.text, marginTop: 1 },
 
@@ -179,8 +267,8 @@ export const ui = StyleSheet.create({
     pillText: { fontFamily: font, fontSize: 13, fontWeight: '700' },
 
     divider: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10, marginVertical: 16 },
-    dividerLine: { height: 1, width: 56, backgroundColor: colors.primaryRing },
-    dividerPill: { backgroundColor: colors.primarySoft, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 6 },
+    dividerLine: { height: 1, flexGrow: 1, flexShrink: 1, maxWidth: 56, backgroundColor: colors.primaryRing },
+    dividerPill: { flexShrink: 0, backgroundColor: colors.primarySoft, borderRadius: radius.pill, paddingHorizontal: 14, paddingVertical: 6 },
     dividerText: { fontFamily: font, fontSize: 12, fontWeight: '700', letterSpacing: 1, color: colors.primary, textTransform: 'uppercase' },
 
     avatar: { alignItems: 'center', justifyContent: 'center' },

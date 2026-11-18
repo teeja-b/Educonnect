@@ -14,21 +14,22 @@ import { Audio } from 'expo-av';
 import * as DocumentPicker from 'expo-document-picker';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Alert,
-    Animated,
-    FlatList,
-    Image,
-    KeyboardAvoidingView,
-    Linking,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Alert,
+  Animated,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { Text, colors as C, font, radius, shadow } from '../theme';
+import { setActiveChatPartner } from '../firebaseConfig';
 import 'react-native-get-random-values';
 import io from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
@@ -36,7 +37,7 @@ import { v4 as uuidv4 } from 'uuid';
 import TutorProfileViewer from './TutorProfileViewer';
 import VoiceCall from './VoiceCall';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://hult-663884308553.europe-west9.run.app';
+import { API_URL } from '../utils/config';
 
 // ─── tiny helpers ────────────────────────────────────────────────────────────
 const fmtCountdown = secs => {
@@ -59,7 +60,13 @@ const MessagingVideoChat = ({
 }) => {
     // ── existing state ──────────────────────────────────────────────────────────
     const [conversations, setConversations] = useState([]);
+    const [conversationsLoaded, setConversationsLoaded] = useState(false);
     const [selectedConversation, setSelectedConversation] = useState(null);
+    // Tell the app-wide notifier which chat is open (no banner for that person)
+    useEffect(() => {
+        setActiveChatPartner(selectedConversation ? (selectedConversation.tutorUserId || selectedConversation.partnerId) : null);
+        return () => setActiveChatPartner(null);
+    }, [selectedConversation]);
     const [tutors, setTutors] = useState([]);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
@@ -328,7 +335,7 @@ const MessagingVideoChat = ({
                 setConversations(Array.isArray(data) ? data : data.conversations || []);
             }
         } catch { setConversations([]); }
-        finally { setLoading(false); }
+        finally { setLoading(false); setConversationsLoaded(true); }
     };
 
     const openConversation = async conv => {
@@ -549,15 +556,18 @@ const MessagingVideoChat = ({
     if (!showMessages || !selectedConversation) {
         return (
             <SafeAreaView style={styles.listContainer}>
-                {/* ADD THIS */}
+                {/* Only joins from the list when there's no conversation to open.
+                    Otherwise the chat opens automatically and the header's VoiceCall
+                    joins instead — joining here too meant this instance was unmounted
+                    mid-join when the chat opened, which cancelled the call. */}
                 {appSocket && (
                     <VoiceCall
                         externalSocket={appSocket}
                         currentUserId={currentUserId}
                         selectedTutor={{ user_id: null, name: 'Tutor' }}
                         currentUserName="Student"
-                        autoJoinMeetingId={autoJoinMeetingId}
-                        autoJoinUrl={autoJoinUrl}
+                        autoJoinMeetingId={conversationsLoaded && conversations.length === 0 ? autoJoinMeetingId : null}
+                        autoJoinUrl={conversationsLoaded && conversations.length === 0 ? autoJoinUrl : null}
                         onCallEnded={onCallEnded}
                         authToken={authToken}
                     />
@@ -651,7 +661,7 @@ const MessagingVideoChat = ({
                 {/* ── Header ── */}
                 <View style={styles.chatHeader}>
                     <TouchableOpacity style={styles.backBtn} onPress={handleBack}>
-                        <Icon name="arrow-left" size={22} color="#fff" />
+                        <Icon name="arrow-left" size={22} color={C.text} />
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -665,7 +675,7 @@ const MessagingVideoChat = ({
                     >
                         {selectedTutor?.avatar
                             ? <Text style={styles.headerAvatarEmoji}>{selectedTutor.avatar}</Text>
-                            : <View style={styles.headerAvatarPlaceholder}><Icon name="user" size={18} color="#fff" /></View>}
+                            : <View style={styles.headerAvatarPlaceholder}><Icon name="user" size={18} color={C.primary} /></View>}
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -821,66 +831,52 @@ const MessagingVideoChat = ({
 
 // ─── styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-    listContainer: { flex: 1, width: '100%', maxWidth: 820, alignSelf: 'center', backgroundColor: '#F6F8FC', paddingHorizontal: 12, paddingTop: 8 },
-    listTitle: { fontSize: 20, fontWeight: '700', color: '#111827', marginBottom: 10 },
+    listContainer: { flex: 1, width: '100%', maxWidth: 820, alignSelf: 'center', backgroundColor: C.bg, paddingHorizontal: 12, paddingTop: 8 },
+    listTitle: { fontSize: 20, fontWeight: '700', color: C.text, marginBottom: 10 },
 
-    searchRow: {
-        flexDirection: 'row', alignItems: 'center',
-        backgroundColor: '#fff', borderRadius: 16,
-        borderWidth: 1, borderColor: '#D5DCEA',
-        paddingHorizontal: 10, marginBottom: 10,
-    },
+    searchRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: radius.lg, borderWidth: 1, borderColor: C.borderStrong, paddingHorizontal: 10, marginBottom: 10, ...shadow },
     searchIcon: { marginRight: 6 },
-    searchInput: { flex: 1, fontSize: 14, paddingVertical: 8, color: '#111827' },
+    searchInput: { flex: 1, fontSize: 14, paddingVertical: 8, color: C.text, fontFamily: font },
 
-    tutorList: { backgroundColor: '#fff', borderRadius: 16 },
-    divider: { height: 1, backgroundColor: '#F3F5FA' },
+    tutorList: { backgroundColor: '#fff', borderRadius: radius.lg, borderWidth: 1, borderColor: C.border, ...shadow },
+    divider: { height: 1, backgroundColor: C.tile },
     tutorRow: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 10 },
 
     avatarWrapper: { position: 'relative', flexShrink: 0 },
     avatarEmoji: { fontSize: 24, width: 40, height: 40, textAlign: 'center', lineHeight: 40 },
-    avatarPlaceholder: {
-        width: 40, height: 40, borderRadius: 20,
-        backgroundColor: '#E8EEFD', alignItems: 'center', justifyContent: 'center',
-    },
+    avatarPlaceholder: { width: 40, height: 40, borderRadius: 20, backgroundColor: C.primarySoft, alignItems: 'center', justifyContent: 'center' },
     onlineDot: {
         position: 'absolute', bottom: 0, right: 0,
         width: 10, height: 10, borderRadius: 5,
         backgroundColor: '#22c55e', borderWidth: 2, borderColor: '#fff',
     },
     tutorInfo: { flex: 1, minWidth: 0 },
-    tutorName: { fontSize: 14, fontWeight: '600', color: '#111827' },
-    onlineTag: { fontSize: 12, fontWeight: '400', color: '#059669' },
-    tutorExpertise: { fontSize: 12, color: '#6b7280', marginTop: 1 },
-    messageBtn: {
-        flexDirection: 'row', alignItems: 'center', gap: 5,
-        backgroundColor: '#2F5BEA', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12,
-    },
+    tutorName: { fontSize: 14, fontWeight: '600', color: C.text },
+    onlineTag: { fontSize: 12, fontWeight: '400', color: C.successText },
+    tutorExpertise: { fontSize: 12, color: C.textMuted, marginTop: 1 },
+    messageBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: C.primary, paddingHorizontal: 12, paddingVertical: 7, borderRadius: radius.md },
     messageBtnText: { color: '#fff', fontSize: 12, fontWeight: '500' },
     emptyState: { alignItems: 'center', paddingVertical: 40 },
-    emptyText: { color: '#9ca3af', fontSize: 13, marginTop: 8, textAlign: 'center' },
+    emptyText: { color: C.textSubtle, fontSize: 13, marginTop: 8, textAlign: 'center' },
 
     chatContainer: { flex: 1, width: '100%', maxWidth: 820, alignSelf: 'center', backgroundColor: '#fff' },
-    chatHeader: {
-        flexDirection: 'row', alignItems: 'center', gap: 8,
-        paddingHorizontal: 8, paddingVertical: 12, backgroundColor: '#2F5BEA',
-    },
-    backBtn: { padding: 6, borderRadius: 12 },
+    chatHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 8, paddingVertical: 12, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: C.border },
+    backBtn: { padding: 6, borderRadius: radius.md },
     headerAvatarEmoji: { fontSize: 20, width: 36, height: 36, textAlign: 'center', lineHeight: 36 },
     headerAvatarPlaceholder: {
         width: 36, height: 36, borderRadius: 18,
-        backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center',
+        backgroundColor: C.primarySoft, alignItems: 'center', justifyContent: 'center',
     },
     headerInfo: { flex: 1, minWidth: 0 },
-    headerName: { fontSize: 14, fontWeight: '600', color: '#fff' },
-    headerStatus: { fontSize: 12, color: '#BFD0FA', marginTop: 1 },
+    headerName: { fontSize: 14, fontWeight: '600', color: C.text },
+    headerStatus: { fontSize: 12, color: C.textMuted, marginTop: 1 },
 
     // countdown badge in header
     countdownBadge: {
         flexDirection: 'row', alignItems: 'center', gap: 4,
         borderWidth: 1.5, borderRadius: 20,
         paddingHorizontal: 8, paddingVertical: 3,
-        backgroundColor: 'rgba(0,0,0,0.25)',
+        backgroundColor: C.tile,
     },
     countdownText: { fontSize: 12, fontWeight: '700', fontVariant: ['tabular-nums'] },
 
@@ -892,8 +888,8 @@ const styles = StyleSheet.create({
     msgRowOther: { justifyContent: 'flex-start' },
 
     bubble: { maxWidth: '78%', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16 },
-    bubbleOwn: { backgroundColor: '#2F5BEA', borderBottomRightRadius: 4 },
-    bubbleOther: { backgroundColor: '#fff', borderBottomLeftRadius: 4, borderWidth: 1, borderColor: '#E6EAF2' },
+    bubbleOwn: { backgroundColor: C.primary, borderBottomRightRadius: 4 },
+    bubbleOther: { backgroundColor: '#fff', borderBottomLeftRadius: 4, borderWidth: 1, borderColor: C.border },
 
     attachmentContainer: { marginBottom: 4 },
     imageAttachment: { width: 200, height: 150, borderRadius: 8 },
@@ -902,42 +898,28 @@ const styles = StyleSheet.create({
     voiceLabelOwn: { color: '#fff' },
     fileRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     fileLabel: { fontSize: 12, color: '#3b82f6', textDecorationLine: 'underline', flexShrink: 1 },
-    fileLabelOwn: { color: '#BFD0FA' },
+    fileLabelOwn: { color: C.primaryRing },
 
-    msgText: { fontSize: 14, color: '#111827', lineHeight: 20 },
+    msgText: { fontSize: 14, color: C.text, lineHeight: 20 },
     msgTextOwn: { color: '#fff' },
     msgMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 3, marginTop: 2 },
-    msgTime: { fontSize: 11, color: '#9ca3af' },
+    msgTime: { fontSize: 11, color: C.textSubtle },
     msgTimeOwn: { color: 'rgba(255,255,255,0.6)' },
     failedStatus: { fontSize: 11, color: '#fca5a5' },
 
     typingRow: { flexDirection: 'row', justifyContent: 'flex-start', marginTop: 4 },
-    typingBubble: {
-        backgroundColor: '#fff', borderWidth: 1, borderColor: '#E6EAF2',
-        paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, borderBottomLeftRadius: 4,
-    },
-    typingDots: { color: '#9ca3af', fontSize: 14, letterSpacing: 3 },
+    typingBubble: { backgroundColor: '#fff', borderWidth: 1, borderColor: C.border, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 16, borderBottomLeftRadius: 4 },
+    typingDots: { color: C.textSubtle, fontSize: 14, letterSpacing: 3 },
 
-    inputBar: {
-        backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E6EAF2',
-        paddingHorizontal: 12, paddingVertical: 8,
-    },
+    inputBar: { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: C.border, paddingHorizontal: 12, paddingVertical: 8 },
     inputBarBlocked: { backgroundColor: '#fafafa' },
-    attachmentPreview: {
-        flexDirection: 'row', alignItems: 'center', gap: 6,
-        backgroundColor: '#F3F5FA', borderRadius: 12,
-        paddingHorizontal: 8, paddingVertical: 6, marginBottom: 6,
-    },
+    attachmentPreview: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: C.tile, borderRadius: 12, paddingHorizontal: 8, paddingVertical: 6, marginBottom: 6 },
     attachmentName: { flex: 1, fontSize: 12, color: '#374151' },
     inputRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
     iconBtn: { padding: 8, borderRadius: 20 },
     iconBtnRecording: { backgroundColor: '#ef4444' },
-    textInput: {
-        flex: 1, borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 20,
-        paddingHorizontal: 12, paddingVertical: 8,
-        fontSize: 14, color: '#111827', backgroundColor: '#fff',
-    },
-    sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#2F5BEA', alignItems: 'center', justifyContent: 'center' },
+    textInput: { flex: 1, borderWidth: 1, borderColor: C.border, borderRadius: radius.md, paddingHorizontal: 12, paddingVertical: 8, fontSize: 14, color: C.text, backgroundColor: '#fff', fontFamily: font },
+    sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: C.primary, alignItems: 'center', justifyContent: 'center' },
     sendBtnDisabled: { opacity: 0.4 },
 
     // blocked input state
@@ -945,7 +927,7 @@ const styles = StyleSheet.create({
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
         gap: 8, paddingVertical: 12,
     },
-    blockedInputText: { fontSize: 13, color: '#9ca3af', fontStyle: 'italic' },
+    blockedInputText: { fontSize: 13, color: C.textSubtle, fontStyle: 'italic', fontFamily: font },
 
     // expired overlay
     expiredOverlay: {
@@ -955,36 +937,17 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         zIndex: 99,
     },
-    expiredCard: {
-        backgroundColor: '#fff',
-        borderRadius: 20,
-        marginHorizontal: 32,
-        paddingHorizontal: 28,
-        paddingTop: 32,
-        paddingBottom: 24,
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.18,
-        shadowRadius: 24,
-        elevation: 12,
-    },
+    expiredCard: { backgroundColor: '#fff', borderRadius: radius.lg, marginHorizontal: 32, paddingHorizontal: 28, paddingTop: 32, paddingBottom: 24, alignItems: 'center', borderWidth: 1, borderColor: C.border, ...shadow },
     expiredIconCircle: {
         width: 68, height: 68, borderRadius: 34,
         backgroundColor: '#fef3c7',
         alignItems: 'center', justifyContent: 'center',
         marginBottom: 16,
     },
-    expiredTitle: {
-        fontSize: 18, fontWeight: '700', color: '#111827',
-        marginBottom: 10, textAlign: 'center',
-    },
-    expiredBody: {
-        fontSize: 13.5, color: '#6b7280', textAlign: 'center',
-        lineHeight: 20, marginBottom: 18,
-    },
-    expiredDivider: { width: '100%', height: 1, backgroundColor: '#F3F5FA', marginBottom: 14 },
-    expiredWaiting: { fontSize: 12, color: '#9ca3af', textAlign: 'center' },
+    expiredTitle: { fontSize: 18, fontWeight: '700', color: C.text, marginBottom: 10, textAlign: 'center' },
+    expiredBody: { fontSize: 13.5, color: C.textMuted, textAlign: 'center', lineHeight: 20, marginBottom: 18 },
+    expiredDivider: { width: '100%', height: 1, backgroundColor: C.tile, marginBottom: 14 },
+    expiredWaiting: { fontSize: 12, color: C.textSubtle, textAlign: 'center' },
 });
 
 export default MessagingVideoChat;

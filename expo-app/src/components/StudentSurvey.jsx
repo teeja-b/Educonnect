@@ -1,15 +1,33 @@
 import React, { useState } from 'react';
 import {
-    View, Text, TextInput, TouchableOpacity, Modal, ScrollView,
-    ActivityIndicator, StyleSheet,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+  ScrollView,
+  ActivityIndicator,
+  StyleSheet,
+  useWindowDimensions,
+  Platform,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, colors as C, font, radius, shadow, useCompact } from '../theme';
 import { Brain, BookOpen, Languages, Code, Zap, Clock, Star, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react-native';
 import { storage } from '../utils/storage';
 
-const API_URL = 'https://hult-663884308553.europe-west9.run.app';
+import { API_URL } from '../utils/config';
 
 const StudentSurvey = ({ onComplete, onClose }) => {
     const [step, setStep] = useState(1);
+    // Size the sheet from the viewport so header, content and footer always fit.
+    const { height: winHeight } = useWindowDimensions();
+    const compact = useCompact();
+    // Android draws this sheet under the status bar and navigation buttons,
+    // so keep it clear of both (same approach as App.jsx).
+    const insets = useSafeAreaInsets();
+    const padTop = Platform.OS === 'android' ? insets.top : 0;
+    const padBottom = Platform.OS === 'android' ? insets.bottom : 0;
+    const sheetMaxHeight = Math.min((winHeight - padTop - padBottom) * (compact ? 0.92 : 0.86), 640);
     const [surveyData, setSurveyData] = useState({
         mathScore: 5, scienceScore: 5, languageScore: 5, techScore: 5,
         motivationLevel: 5, learningStyle: '', preferredSubjects: [],
@@ -88,9 +106,9 @@ const StudentSurvey = ({ onComplete, onClose }) => {
     );
 
     const Step1 = () => (
-        <ScrollView>
+        <ScrollView style={styles.stepScroll} contentContainerStyle={styles.stepScrollContent} keyboardShouldPersistTaps="handled">
             <View style={styles.stepHeader}>
-                <Brain size={36} color="#2F5BEA" />
+                <Brain size={26} color="#2F5BEA" />
                 <Text style={styles.stepTitle}>Rate Your Skills</Text>
                 <Text style={styles.stepSub}>Help us understand your current abilities</Text>
             </View>
@@ -104,9 +122,9 @@ const StudentSurvey = ({ onComplete, onClose }) => {
 
     // ── STEP 2: Learning Preferences ──────────────────────────────────────────
     const Step2 = () => (
-        <ScrollView>
+        <ScrollView style={styles.stepScroll} contentContainerStyle={styles.stepScrollContent} keyboardShouldPersistTaps="handled">
             <View style={styles.stepHeader}>
-                <BookOpen size={36} color="#2F5BEA" />
+                <BookOpen size={26} color="#2F5BEA" />
                 <Text style={styles.stepTitle}>Learning Preferences</Text>
                 <Text style={styles.stepSub}>Tell us how you learn best</Text>
             </View>
@@ -128,7 +146,7 @@ const StudentSurvey = ({ onComplete, onClose }) => {
                 </TouchableOpacity>
             ))}
 
-            <Text style={[styles.sectionLabel, { marginTop: 16 }]}>Overall Skill Level</Text>
+            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>Overall Skill Level</Text>
             <View style={styles.chipRow}>
                 {['beginner', 'intermediate', 'advanced'].map(l => (
                     <TouchableOpacity
@@ -143,7 +161,7 @@ const StudentSurvey = ({ onComplete, onClose }) => {
                 ))}
             </View>
 
-            <Text style={[styles.sectionLabel, { marginTop: 16 }]}>When can you study?</Text>
+            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>When can you study?</Text>
             <View style={styles.chipRow}>
                 {['morning', 'afternoon', 'evening'].map(t => (
                     <TouchableOpacity
@@ -162,7 +180,7 @@ const StudentSurvey = ({ onComplete, onClose }) => {
 
     // ── STEP 3: Subjects & Languages ──────────────────────────────────────────
     const Step3 = () => (
-        <ScrollView>
+        <ScrollView style={styles.stepScroll} contentContainerStyle={styles.stepScrollContent} keyboardShouldPersistTaps="handled">
             <View style={styles.stepHeader}>
                 <Text style={styles.stepTitle}>Subjects & Languages</Text>
                 <Text style={styles.stepSub}>What interests you?</Text>
@@ -185,7 +203,7 @@ const StudentSurvey = ({ onComplete, onClose }) => {
                     })}
             </View>
 
-            <Text style={[styles.sectionLabel, { marginTop: 16 }]}>Languages you speak</Text>
+            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>Languages you speak</Text>
             <View style={styles.tagGrid}>
                 {['English', 'Spanish', 'French', 'Mandarin', 'Hindi', 'Arabic', 'Portuguese', 'Russian'].map(l => {
                     const active = surveyData.preferredLanguages.includes(l);
@@ -206,9 +224,9 @@ const StudentSurvey = ({ onComplete, onClose }) => {
 
     // ── STEP 4: Goals ─────────────────────────────────────────────────────────
     const Step4 = () => (
-        <ScrollView>
+        <ScrollView style={styles.stepScroll} contentContainerStyle={styles.stepScrollContent} keyboardShouldPersistTaps="handled">
             <View style={styles.stepHeader}>
-                <Star size={36} color="#ca8a04" />
+                <Star size={26} color="#ca8a04" />
                 <Text style={styles.stepTitle}>Your Learning Goals</Text>
                 <Text style={styles.stepSub}>What do you want to achieve?</Text>
             </View>
@@ -245,18 +263,18 @@ const StudentSurvey = ({ onComplete, onClose }) => {
             </View>
 
             {/* Additional Details */}
-            <Text style={[styles.sectionLabel, { marginTop: 16 }]}>Anything else to add? (optional)</Text>
+            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>Anything else to add? (optional)</Text>
             <TextInput
                 style={styles.textarea}
                 placeholder="E.g. I have an exam in 3 months and need focused help..."
                 multiline
-                numberOfLines={3}
+                numberOfLines={2}
                 value={surveyData.learningGoals}
                 onChangeText={v => update('learningGoals', v)}
             />
 
             {/* Tutor Gender Preference */}
-            <Text style={[styles.sectionLabel, { marginTop: 16 }]}>Preferred tutor gender</Text>
+            <Text style={[styles.sectionLabel, { marginTop: 12 }]}>Preferred tutor gender</Text>
             <View style={styles.chipRow}>
                 {[
                     { value: 'female', label: '👩 Female' },
@@ -302,8 +320,8 @@ const StudentSurvey = ({ onComplete, onClose }) => {
 
     return (
         <Modal transparent animationType="slide" visible>
-            <View style={styles.overlay}>
-                <View style={styles.sheet}>
+            <View style={[styles.overlay, !compact && styles.overlayCentered, padTop ? { paddingTop: padTop } : null]}>
+                <View style={[styles.sheet, !compact && styles.sheetFloating, { maxHeight: sheetMaxHeight }]}>
                     {/* Header */}
                     <View style={styles.sheetHeader}>
                         <Text style={styles.sheetTitle}>Student Learning Survey</Text>
@@ -327,7 +345,7 @@ const StudentSurvey = ({ onComplete, onClose }) => {
                     </View>
 
                     {/* Footer */}
-                    <View style={styles.footer}>
+                    <View style={[styles.footer, { paddingBottom: 10 + padBottom }]}>
                         {step > 1 && (
                             <TouchableOpacity style={styles.backBtn} onPress={() => setStep(step - 1)}>
                                 <ArrowLeft size={16} color="#374151" />
@@ -362,82 +380,64 @@ const StudentSurvey = ({ onComplete, onClose }) => {
 
 const styles = StyleSheet.create({
     overlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+    // Tablets / desktop: a centred card instead of a full-width bottom sheet.
+    overlayCentered: { justifyContent: 'center', padding: 16 },
     sheet: {
-        width: '100%', maxWidth: 560, alignSelf: 'center',
-        backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20,
-        maxHeight: '92%', flexShrink: 1,
+        width: '100%', maxWidth: 480, alignSelf: 'center',
+        backgroundColor: '#fff', borderTopLeftRadius: 18, borderTopRightRadius: 18,
+        flexShrink: 1, overflow: 'hidden',
     },
-    chipActiveBlue: { borderColor: '#2F5BEA', backgroundColor: '#E8EEFD' },
-    sheetHeader: { padding: 16, borderBottomWidth: 1, borderBottomColor: '#E6EAF2' },
-    sheetTitle: { fontSize: 16, fontWeight: 'bold', color: '#111827', marginBottom: 10 },
-    closeBtn: { position: 'absolute', top: 16, right: 16 },
-    closeBtnText: { fontSize: 16, color: '#6b7280' },
-    progressRow: { flexDirection: 'row', gap: 6, marginBottom: 6 },
-    progressBar: { flex: 1, height: 6, borderRadius: 3, backgroundColor: '#E6EAF2' },
-    progressBarActive: { backgroundColor: '#2F5BEA' },
-    stepCount: { fontSize: 12, color: '#9ca3af' },
-    sheetContent: { flexShrink: 1, maxHeight: 440, padding: 16 },
-    stepHeader: { alignItems: 'center', marginBottom: 16 },
-    stepTitle: { fontSize: 18, fontWeight: 'bold', color: '#111827', marginTop: 8 },
-    stepSub: { fontSize: 12, color: '#6b7280', marginTop: 4 },
-    sliderWrap: { marginBottom: 16 },
-    sliderLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
+    sheetFloating: { borderRadius: 18, ...shadow },
+    chipActiveBlue: { borderColor: C.primary, backgroundColor: C.primarySoft },
+    sheetHeader: { paddingHorizontal: 14, paddingTop: 12, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: C.border },
+    sheetTitle: { fontSize: 15, fontWeight: '700', color: C.text, marginBottom: 8, paddingRight: 28 },
+    closeBtn: { position: 'absolute', top: 8, right: 8, padding: 6 },
+    closeBtnText: { fontSize: 16, color: C.textMuted },
+    progressRow: { flexDirection: 'row', gap: 5, marginBottom: 4 },
+    progressBar: { flex: 1, height: 4, borderRadius: 2, backgroundColor: C.border },
+    progressBarActive: { backgroundColor: C.primary },
+    stepCount: { fontSize: 11, color: C.textSubtle },
+    // Content takes whatever height is left between header and footer and scrolls inside it.
+    sheetContent: { flexShrink: 1, minHeight: 0 },
+    stepScroll: { flexGrow: 0 },
+    stepScrollContent: { paddingHorizontal: 14, paddingTop: 12, paddingBottom: 8 },
+    stepHeader: { alignItems: 'center', marginBottom: 10 },
+    stepTitle: { fontSize: 16, fontWeight: '700', color: C.text, marginTop: 4 },
+    stepSub: { fontSize: 12, color: C.textMuted, marginTop: 2, textAlign: 'center' },
+    sliderWrap: { marginBottom: 10 },
+    sliderLabelRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
     sliderLabel: { fontSize: 13, fontWeight: '600', color: '#374151' },
-    sliderValue: { fontSize: 15, fontWeight: 'bold' },
-    sliderTrack: { height: 6, backgroundColor: '#E6EAF2', borderRadius: 3, marginBottom: 8 },
-    sliderFill: { height: 6, borderRadius: 3 },
+    sliderValue: { fontSize: 13, fontWeight: '700' },
+    sliderTrack: { height: 4, backgroundColor: C.border, borderRadius: 2, marginBottom: 6 },
+    sliderFill: { height: 4, borderRadius: 2 },
     sliderBtnRow: { flexDirection: 'row', gap: 4 },
-    sliderDot: { flex: 1, height: 16, borderRadius: 8, backgroundColor: '#E6EAF2' },
-    sectionLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 8 },
-    optionCard: {
-        borderWidth: 2, borderColor: '#E6EAF2', borderRadius: 12,
-        padding: 12, marginBottom: 8,
-    },
-    optionCardActive: { borderColor: '#2F5BEA', backgroundColor: '#E8EEFD' },
-    optionTitle: { fontSize: 14, fontWeight: '600', color: '#374151', textTransform: 'capitalize' },
-    optionTitleActive: { color: '#2F5BEA' },
-    optionDesc: { fontSize: 12, color: '#6b7280', marginTop: 2 },
-    chipRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-    chip: { borderWidth: 2, borderColor: '#E6EAF2', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 },
-    chipActivePurple: { borderColor: '#2F5BEA', backgroundColor: '#E8EEFD' },
-    chipActiveGreen: { borderColor: '#059669', backgroundColor: '#E6F7EF' },
-    chipText: { fontSize: 13, fontWeight: '500', color: '#374151', textTransform: 'capitalize' },
-    tagGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-    tagChip: {
-        flexDirection: 'row', alignItems: 'center',
-        borderWidth: 2, borderColor: '#E6EAF2', borderRadius: 12,
-        paddingHorizontal: 10, paddingVertical: 6,
-    },
-    tagChipActive: { borderColor: '#2F5BEA', backgroundColor: '#E8EEFD' },
-    tagChipActiveGreen: { borderColor: '#059669', backgroundColor: '#E6F7EF' },
+    sliderDot: { flex: 1, height: 14, borderRadius: 7, backgroundColor: C.border },
+    sectionLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6 },
+    optionCard: { borderWidth: 1.5, borderColor: C.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 6 },
+    optionCardActive: { borderColor: C.primary, backgroundColor: C.primarySoft },
+    optionTitle: { fontSize: 13, fontWeight: '600', color: '#374151', textTransform: 'capitalize' },
+    optionTitleActive: { color: C.primary },
+    optionDesc: { fontSize: 11, color: C.textMuted, marginTop: 1 },
+    chipRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
+    chip: { borderWidth: 1.5, borderColor: C.border, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6 },
+    chipActivePurple: { borderColor: C.primary, backgroundColor: C.primarySoft },
+    chipActiveGreen: { borderColor: C.successText, backgroundColor: C.successSoft },
+    chipText: { fontSize: 12, fontWeight: '500', color: '#374151', textTransform: 'capitalize' },
+    tagGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+    tagChip: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: C.border, borderRadius: 10, paddingHorizontal: 9, paddingVertical: 5 },
+    tagChipActive: { borderColor: C.primary, backgroundColor: C.primarySoft },
+    tagChipActiveGreen: { borderColor: C.successText, backgroundColor: C.successSoft },
     tagText: { fontSize: 12, color: '#374151' },
-    textarea: {
-        borderWidth: 2, borderColor: '#E6EAF2', borderRadius: 12,
-        padding: 12, fontSize: 13, color: '#111827', minHeight: 120,
-        textAlignVertical: 'top', marginBottom: 12,
-    },
-    summaryBox: { backgroundColor: '#E8EEFD', borderRadius: 12, padding: 14 },
-    summaryTitle: { fontSize: 14, fontWeight: '600', color: '#1E45C8', marginBottom: 6 },
-    summaryItem: { fontSize: 12, color: '#1E45C8', marginBottom: 2 },
-    footer: {
-        flexDirection: 'row', justifyContent: 'flex-end', gap: 10,
-        paddingHorizontal: 16, paddingVertical: 12,
-        borderTopWidth: 1, borderTopColor: '#E6EAF2',
-    },
-    backBtn: {
-        flexDirection: 'row', alignItems: 'center', gap: 6,
-        backgroundColor: '#F3F5FA', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
-    },
+    textarea: { borderWidth: 1.5, borderColor: C.border, borderRadius: radius.md, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: C.text, minHeight: 64, textAlignVertical: 'top', marginBottom: 4, fontFamily: font },
+    summaryBox: { backgroundColor: C.primarySoft, borderRadius: 10, padding: 10, marginTop: 12 },
+    summaryTitle: { fontSize: 13, fontWeight: '600', color: C.primaryDark, marginBottom: 4 },
+    summaryItem: { fontSize: 11, color: C.primaryDark, marginBottom: 1 },
+    footer: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderTopWidth: 1, borderTopColor: C.border, backgroundColor: '#fff' },
+    backBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: C.tile, borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 10 },
     backBtnText: { fontSize: 13, fontWeight: '500', color: '#374151' },
-    nextBtn: {
-        flexDirection: 'row', alignItems: 'center', gap: 6,
-        backgroundColor: '#2F5BEA', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
-    },
+    nextBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: C.primary, borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 10 },
     nextBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
-    submitBtn: {
-        flexDirection: 'row', alignItems: 'center', gap: 6,
-        backgroundColor: '#059669', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12,
-    },
+    submitBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: C.successText, borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 10 },
     submitBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
 });
 

@@ -1,8 +1,14 @@
 import React, { useState } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, Modal, ScrollView,
-  ActivityIndicator, StyleSheet,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Modal,
+  ScrollView,
+  ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
+import { Text, colors as C, font, radius, shadow } from '../theme';
 import { Lock, CheckCircle, AlertCircle, Eye, EyeOff, X } from 'lucide-react-native';
 import { storage } from '../utils/storage';
 import { API_URL } from '../utils/config';
@@ -181,50 +187,31 @@ const styles = StyleSheet.create({
     flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center', alignItems: 'center', padding: 16,
   },
-  card: {
-    backgroundColor: '#fff', borderRadius: 16, padding: 24,
-    width: '100%', maxWidth: 440, maxHeight: '90%',
-  },
+  card: { backgroundColor: '#fff', borderRadius: radius.lg, padding: 24, width: '100%', maxWidth: 440, maxHeight: '90%', borderWidth: 1, borderColor: C.border, ...shadow },
   closeBtn: { position: 'absolute', top: 16, right: 16, padding: 8 },
-  iconWrap: {
-    width: 64, height: 64, borderRadius: 32, backgroundColor: '#E8EEFD',
-    alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 12,
-  },
-  title: { fontSize: 22, fontWeight: 'bold', color: '#111827', textAlign: 'center' },
-  sub: { fontSize: 13, color: '#6b7280', textAlign: 'center', marginTop: 4 },
+  iconWrap: { width: 64, height: 64, borderRadius: 32, backgroundColor: C.primarySoft, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 12 },
+  title: { fontSize: 22, fontWeight: '700', color: C.text, textAlign: 'center' },
+  sub: { fontSize: 13, color: C.textMuted, textAlign: 'center', marginTop: 4 },
   label: { fontSize: 13, fontWeight: '500', color: '#374151', marginBottom: 6, marginTop: 12 },
-  inputRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 12,
-    paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#F6F8FC',
-  },
-  input: { flex: 1, fontSize: 14, color: '#111827' },
-  hint: { fontSize: 11, color: '#9ca3af', marginTop: 4 },
+  inputRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: C.border, borderRadius: radius.md, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: C.bg },
+  input: { flex: 1, fontSize: 14, color: C.text, fontFamily: font },
+  hint: { fontSize: 11, color: C.textSubtle, marginTop: 4 },
   strengthWrap: { marginTop: 8 },
   strengthBars: { flexDirection: 'row', gap: 6, marginBottom: 4 },
-  bar: { flex: 1, height: 6, borderRadius: 3, backgroundColor: '#E6EAF2' },
-  barGreen: { backgroundColor: '#059669' },
-  strengthLabel: { fontSize: 11, color: '#6b7280' },
+  bar: { flex: 1, height: 6, borderRadius: 3, backgroundColor: C.border },
+  barGreen: { backgroundColor: C.successText },
+  strengthLabel: { fontSize: 11, color: C.textMuted },
   errorBox: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: '#fef2f2', borderWidth: 1, borderColor: '#fca5a5',
     borderRadius: 12, padding: 12, marginTop: 12,
   },
-  errorText: { color: '#dc2626', fontSize: 13, flex: 1 },
-  submitBtn: {
-    backgroundColor: '#2F5BEA', borderRadius: 12,
-    paddingVertical: 14, alignItems: 'center', marginTop: 16,
-  },
+  errorText: { color: C.danger, fontSize: 13, flex: 1 },
+  submitBtn: { backgroundColor: C.primary, borderRadius: radius.md, paddingVertical: 14, alignItems: 'center', marginTop: 16 },
   submitBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  cancelBtn: {
-    backgroundColor: '#F3F5FA', borderRadius: 12,
-    paddingVertical: 10, alignItems: 'center', marginTop: 10, marginBottom: 16,
-  },
+  cancelBtn: { backgroundColor: C.tile, borderRadius: radius.md, paddingVertical: 10, alignItems: 'center', marginTop: 10, marginBottom: 16 },
   cancelText: { color: '#374151', fontSize: 14 },
-  successIcon: {
-    width: 64, height: 64, borderRadius: 32, backgroundColor: '#E6F7EF',
-    alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 16,
-  },
-  successTitle: { fontSize: 22, fontWeight: 'bold', textAlign: 'center', color: '#111827', marginBottom: 8 },
-  successSub: { fontSize: 14, color: '#6b7280', textAlign: 'center' },
+  successIcon: { width: 64, height: 64, borderRadius: 32, backgroundColor: C.successSoft, alignItems: 'center', justifyContent: 'center', alignSelf: 'center', marginBottom: 16 },
+  successTitle: { fontSize: 22, fontWeight: '700', textAlign: 'center', color: C.text, marginBottom: 8 },
+  successSub: { fontSize: 14, color: C.textMuted, textAlign: 'center' },
 });

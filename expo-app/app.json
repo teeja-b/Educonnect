@@ -1,8 +1,15 @@
 {
   "android": {
-    "package": "com.anonymous.expoapp"
+    "package": "com.Educonnect.myapp",
+    "googleServicesFile": "./google-services.json"
   },
   "plugins": [
     "expo-web-browser"
-  ]
+  ],
+  "extra": {
+    "eas": {
+      "projectId": "8c47cce1-7333-46a9-a4fa-f77189666f53"
+    }
+  },
+  "owner": "teejasvini.b"
 }

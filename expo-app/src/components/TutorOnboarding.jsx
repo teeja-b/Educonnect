@@ -10,13 +10,22 @@
 import { storage } from '../utils/storage';
 import React, { useState, useEffect } from 'react';
 import {
-  View, Text, TextInput, TouchableOpacity, ScrollView,
-  StyleSheet, SafeAreaView, ActivityIndicator, Alert, Modal,
-  KeyboardAvoidingView, Platform,
+  View,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  SafeAreaView,
+  ActivityIndicator,
+  Alert,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
+import { Text, colors as C, font, radius, shadow } from '../theme';
 import { Feather as Icon } from '@expo/vector-icons';
 
-const API_URL = 'https://hult-663884308553.europe-west9.run.app';
+import { API_URL } from '../utils/config';
 
 const TutorOnboarding = ({ onComplete, onSkip, visible = true }) => {
   useEffect(() => {
@@ -270,7 +279,7 @@ const TutorOnboarding = ({ onComplete, onSkip, visible = true }) => {
         </View>
       </View>
       <View style={styles.rateInputRow}>
-        <Text style={styles.rateCurrency}>$</Text>
+        <Text style={styles.rateCurrency}>RS</Text>
         <TextInput
           style={styles.rateInput}
           value={formData.hourly_rate}
@@ -292,7 +301,7 @@ const TutorOnboarding = ({ onComplete, onSkip, visible = true }) => {
           onPress={() => update('hourly_rate', rate.toString())}
         >
           <Text style={styles.rateSuggestionLevel}>{level}</Text>
-          <Text style={styles.rateSuggestionRate}>${rate}/hr</Text>
+          <Text style={styles.rateSuggestionRate}>RS{rate}/hr</Text>
         </TouchableOpacity>
       ))}
       <View style={styles.fieldBlock}>
@@ -390,7 +399,7 @@ const TutorOnboarding = ({ onComplete, onSkip, visible = true }) => {
       <View style={styles.summaryBox}>
         <Text style={styles.summaryTitle}>Review Your Profile</Text>
         <Text style={styles.summaryLine}>✓ Expertise: {formData.expertise.join(', ') || 'None'}</Text>
-        <Text style={styles.summaryLine}>✓ Rate: ${formData.hourly_rate}/hour</Text>
+        <Text style={styles.summaryLine}>✓ Rate: RS {formData.hourly_rate}/hour</Text>
         <Text style={styles.summaryLine}>✓ Languages: {formData.languages.join(', ') || 'None'}</Text>
         <Text style={styles.summaryLine}>✓ Available: {Object.entries(formData.availability).filter(([, v]) => v).map(([k]) => k).join(', ') || 'None'}</Text>
         <Text style={styles.summaryLine}>
@@ -423,7 +432,7 @@ const TutorOnboarding = ({ onComplete, onSkip, visible = true }) => {
             <Text style={styles.modalTitle}>Complete Your Tutor Profile</Text>
             {autoSaving && (
               <View style={styles.autoSaveBadge}>
-                <Icon name="save" size={14} color="#fff" />
+                <Icon name="save" size={14} color={C.primary} />
                 <Text style={styles.autoSaveText}>Saving…</Text>
               </View>
             )}
@@ -487,87 +496,87 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff' },
   flex: { flex: 1 },
   genderRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 6 },
-genderChip: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, borderWidth: 1.5, borderColor: '#D5DCEA', backgroundColor: '#F6F8FC' },
-genderChipActive: { borderColor: '#059669', backgroundColor: '#E6F7EF' },
+genderChip: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, borderWidth: 1.5, borderColor: C.borderStrong, backgroundColor: C.bg },
+genderChipActive: { borderColor: C.successText, backgroundColor: C.successSoft },
 genderChipText: { fontSize: 13, color: '#374151', fontWeight: '500' },
 genderChipTextActive: { color: '#14532D', fontWeight: '600' },
-fieldHint: { fontSize: 12, color: '#9CA3AF', marginTop: 2, marginBottom: 4 },
-  modalHeader: { backgroundColor: '#059669', paddingHorizontal: 16, paddingVertical: 14 },
+fieldHint: { fontSize: 12, color: C.textSubtle, marginTop: 2, marginBottom: 4 },
+  modalHeader: { backgroundColor: '#FFFFFF', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: C.border },
   modalHeaderTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  modalTitle: { color: '#fff', fontWeight: '700', fontSize: 18, flex: 1 },
-  autoSaveBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
-  autoSaveText: { color: '#fff', fontSize: 12 },
+  modalTitle: { color: C.text, fontWeight: '700', fontSize: 18, flex: 1 },
+  autoSaveBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: C.primarySoft, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 99 },
+  autoSaveText: { color: C.text, fontSize: 12 },
   progressBar: { flexDirection: 'row', gap: 4, marginBottom: 8 },
-  progressSegment: { flex: 1, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.3)' },
-  progressSegmentActive: { backgroundColor: '#fff' },
-  stepCounter: { color: '#BBF7D0', fontSize: 12 },
+  progressSegment: { flex: 1, height: 6, borderRadius: 3, backgroundColor: C.border },
+  progressSegmentActive: { backgroundColor: C.success },
+  stepCounter: { color: C.textMuted, fontSize: 12 },
 
   scrollContent: { width: '100%', maxWidth: 760, alignSelf: 'center', padding: 16, paddingBottom: 24 },
   stepContent: { gap: 16 },
   stepHeading: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, marginBottom: 4 },
-  stepTitle: { fontSize: 20, fontWeight: '700', color: '#111827' },
-  stepSubtitle: { fontSize: 13, color: '#6B7280', marginTop: 2 },
+  stepTitle: { fontSize: 20, fontWeight: '700', color: C.text },
+  stepSubtitle: { fontSize: 13, color: C.textMuted, marginTop: 2 },
 
   inputRow: { flexDirection: 'row', gap: 8 },
-  tagInput: { flex: 1, borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: '#111827', backgroundColor: '#F6F8FC' },
-  addBtn: { backgroundColor: '#059669', paddingHorizontal: 18, borderRadius: 12, justifyContent: 'center' },
+  tagInput: { flex: 1, borderWidth: 1, borderColor: C.border, borderRadius: radius.md, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: C.text, backgroundColor: C.bg, fontFamily: font },
+  addBtn: { backgroundColor: C.successText, paddingHorizontal: 18, borderRadius: radius.md, justifyContent: 'center' },
   addBtnText: { color: '#fff', fontWeight: '600', fontSize: 14 },
 
   tagList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, minHeight: 44 },
-  tag: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#E6F7EF', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 99 },
+  tag: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: C.successSoft, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 99 },
   tagText: { color: '#14532D', fontSize: 13, fontWeight: '500' },
-  tagBlue: { backgroundColor: '#E8EEFD' },
-  tagTextBlue: { color: '#1E45C8' },
+  tagBlue: { backgroundColor: C.primarySoft },
+  tagTextBlue: { color: C.primaryDark },
   tagRemove: { color: '#374151', fontSize: 18, fontWeight: '700', lineHeight: 20 },
-  tagEmpty: { color: '#9CA3AF', fontStyle: 'italic', fontSize: 13 },
+  tagEmpty: { color: C.textSubtle, fontStyle: 'italic', fontSize: 13 },
 
   tipBox: { backgroundColor: '#FFFBEB', borderWidth: 1, borderColor: '#FDE68A', borderRadius: 12, padding: 12 },
   tipText: { fontSize: 13, color: '#92400E' },
 
-  bioInput: { borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 10, padding: 12, fontSize: 14, color: '#111827', minHeight: 130, textAlignVertical: 'top', backgroundColor: '#F6F8FC' },
-  charCount: { fontSize: 12, color: '#9CA3AF', textAlign: 'right' },
+  bioInput: { borderWidth: 1, borderColor: C.border, borderRadius: radius.md, padding: 12, fontSize: 14, color: C.text, minHeight: 130, textAlignVertical: 'top', backgroundColor: C.bg, fontFamily: font },
+  charCount: { fontSize: 12, color: C.textSubtle, textAlign: 'right' },
   fieldBlock: { gap: 6 },
   fieldLabel: { fontSize: 13, fontWeight: '600', color: '#374151' },
-  input: { borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: '#111827', backgroundColor: '#F6F8FC' },
+  input: { borderWidth: 1, borderColor: C.border, borderRadius: radius.md, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: C.text, backgroundColor: C.bg, fontFamily: font },
   textarea: { minHeight: 72, textAlignVertical: 'top' },
   sectionLabel: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 4 },
 
-  rateInputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: '#059669', borderRadius: 16, overflow: 'hidden', backgroundColor: '#E6F7EF' },
-  rateCurrency: { paddingHorizontal: 14, fontSize: 24, fontWeight: '700', color: '#059669' },
-  rateInput: { flex: 1, fontSize: 28, fontWeight: '700', color: '#111827', paddingVertical: 10 },
-  rateUnit: { paddingHorizontal: 14, fontSize: 16, color: '#059669', fontWeight: '600' },
+  rateInputRow: { flexDirection: 'row', alignItems: 'center', borderWidth: 2, borderColor: C.border, borderRadius: radius.md, overflow: 'hidden', backgroundColor: C.successSoft },
+  rateCurrency: { paddingHorizontal: 14, fontSize: 24, fontWeight: '700', color: C.successText },
+  rateInput: { flex: 1, fontSize: 28, fontWeight: '700', color: C.text, paddingVertical: 10, fontFamily: font },
+  rateUnit: { paddingHorizontal: 14, fontSize: 16, color: C.successText, fontWeight: '600' },
 
-  rateSuggestion: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, backgroundColor: '#fff', borderRadius: 12, borderWidth: 1, borderColor: '#E6EAF2', marginBottom: 6 },
+  rateSuggestion: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 12, backgroundColor: '#fff', borderRadius: radius.lg, borderWidth: 1, borderColor: C.border, marginBottom: 6, ...shadow },
   rateSuggestionLevel: { color: '#374151', fontSize: 14 },
-  rateSuggestionRate: { color: '#059669', fontWeight: '700', fontSize: 14 },
+  rateSuggestionRate: { color: C.successText, fontWeight: '700', fontSize: 14 },
 
   optionCol: { gap: 6 },
-  optionRow: { padding: 12, borderRadius: 12, borderWidth: 1.5, borderColor: '#D5DCEA', backgroundColor: '#F6F8FC' },
-  optionRowActive: { borderColor: '#059669', backgroundColor: '#E6F7EF' },
+  optionRow: { padding: 12, borderRadius: 12, borderWidth: 1.5, borderColor: C.borderStrong, backgroundColor: C.bg },
+  optionRowActive: { borderColor: C.successText, backgroundColor: C.successSoft },
   optionText: { fontSize: 13, color: '#374151' },
   optionTextActive: { color: '#14532D', fontWeight: '600' },
 
   availGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  availCard: { width: '46%', padding: 16, borderRadius: 16, borderWidth: 2, borderColor: '#E6EAF2', backgroundColor: '#F6F8FC', alignItems: 'center' },
-  availCardActive: { borderColor: '#059669', backgroundColor: '#E6F7EF' },
+  availCard: { width: '46%', padding: 16, borderRadius: 16, borderWidth: 2, borderColor: C.border, backgroundColor: C.bg, alignItems: 'center' },
+  availCardActive: { borderColor: C.successText, backgroundColor: C.successSoft },
   availEmoji: { fontSize: 28, marginBottom: 6 },
   availLabel: { fontSize: 14, fontWeight: '600', color: '#4B5563' },
   availLabelActive: { color: '#14532D' },
 
-  summaryBox: { backgroundColor: '#E6F7EF', borderWidth: 1, borderColor: '#BBF7D0', borderRadius: 16, padding: 14, marginTop: 8 },
+  summaryBox: { backgroundColor: C.successSoft, borderWidth: 1, borderColor: '#BBF7D0', borderRadius: 16, padding: 14, marginTop: 8 },
   summaryTitle: { fontWeight: '700', color: '#14532D', fontSize: 14, marginBottom: 8 },
   summaryLine: { fontSize: 13, color: '#166534', marginBottom: 4 },
 
-  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: 1, borderTopColor: '#F3F5FA', backgroundColor: '#F6F8FC' },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 12, borderTopWidth: 1, borderTopColor: C.tile, backgroundColor: C.bg },
   footerLeft: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  backBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, borderRadius: 12, borderWidth: 1, borderColor: '#D5DCEA', gap: 4 },
+  backBtn: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, borderRadius: radius.md, borderWidth: 1, borderColor: C.borderStrong, gap: 4 },
   backBtnText: { fontSize: 14, color: '#374151' },
   skipBtn: { paddingHorizontal: 12, paddingVertical: 10 },
-  skipBtnText: { fontSize: 14, color: '#6B7280' },
-  nextBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#059669', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 },
+  skipBtnText: { fontSize: 14, color: C.textMuted },
+  nextBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: C.successText, paddingHorizontal: 20, paddingVertical: 12, borderRadius: radius.md },
   nextBtnDisabled: { opacity: 0.4 },
   nextBtnText: { color: '#fff', fontWeight: '600', fontSize: 15 },
-  completeBtn: { backgroundColor: '#059669', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12, alignItems: 'center', minWidth: 150 },
+  completeBtn: { backgroundColor: C.successText, paddingHorizontal: 20, paddingVertical: 12, borderRadius: radius.md, alignItems: 'center', minWidth: 150 },
 });
 
 export default TutorOnboarding;

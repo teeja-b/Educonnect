@@ -1,5 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, StyleSheet } from 'react-native';
+import {
+  View,
+  TouchableOpacity,
+  Modal,
+  StyleSheet,
+} from 'react-native';
+import { Text, colors as C, font, radius, shadow } from '../theme';
 
 const ProfileCompletionPrompt = ({ onComplete, onDismiss }) => {
   return (
@@ -36,41 +42,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
   },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    width: '100%',
-    maxWidth: 380,
-    shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 10,
-    elevation: 10,
-  },
+  card: { backgroundColor: '#fff', borderRadius: radius.lg, width: '100%', maxWidth: 380, borderWidth: 1, borderColor: C.border, ...shadow },
   header: { padding: 24, paddingBottom: 8 },
-  title: { fontSize: 18, fontWeight: '600', color: '#111827' },
+  title: { fontSize: 18, fontWeight: '600', color: C.text },
   body: { paddingHorizontal: 24, paddingBottom: 24 },
-  message: { fontSize: 14, color: '#6b7280', lineHeight: 22 },
+  message: { fontSize: 14, color: C.textMuted, lineHeight: 22 },
   buttons: {
     flexDirection: 'row',
     gap: 12,
     paddingHorizontal: 24,
     paddingBottom: 24,
   },
-  laterBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    backgroundColor: '#E6EAF2',
-    borderRadius: 12,
-    alignItems: 'center',
-  },
+  laterBtn: { flex: 1, paddingVertical: 10, backgroundColor: C.border, borderRadius: radius.md, alignItems: 'center' },
   laterText: { color: '#374151', fontWeight: '500', fontSize: 14 },
-  completeBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    backgroundColor: '#2F5BEA',
-    borderRadius: 12,
-    alignItems: 'center',
-  },
+  completeBtn: { flex: 1, paddingVertical: 10, backgroundColor: C.primary, borderRadius: radius.md, alignItems: 'center' },
   completeText: { color: '#fff', fontWeight: '500', fontSize: 14 },
 });
 

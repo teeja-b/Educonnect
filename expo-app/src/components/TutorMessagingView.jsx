@@ -10,27 +10,29 @@ import { Feather as Icon } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-    ActivityIndicator,
-    Animated,
-    FlatList,
-    Image,
-    KeyboardAvoidingView,
-    Linking,
-    Platform,
-    SafeAreaView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  Animated,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  SafeAreaView,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
+import { Text, colors as C, font, radius, shadow } from '../theme';
+import { setActiveChatPartner } from '../firebaseConfig';
 import 'react-native-get-random-values';
 import io from 'socket.io-client';
 import { v4 as uuidv4 } from 'uuid';
 
 import VoiceCall from './VoiceCall';
+import StudentProfileViewer from './StudentSurveyView';
 
-const API_URL = 'https://hult-663884308553.europe-west9.run.app';
+import { API_URL } from '../utils/config';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 const fmtCountdown = secs => {
@@ -55,7 +57,14 @@ const TutorMessagingView = ({
 }) => {
     // ── existing state ──────────────────────────────────────────────────────────
     const [conversations, setConversations] = useState([]);
+    const [conversationsLoaded, setConversationsLoaded] = useState(false);
     const [selectedConversation, setSelectedConversation] = useState(null);
+    const [showStudentProfile, setShowStudentProfile] = useState(false);
+    // Tell the app-wide notifier which chat is open (no banner for that person)
+    useEffect(() => {
+        setActiveChatPartner(selectedConversation ? (selectedConversation.studentId || selectedConversation.partnerId || selectedConversation.student_id) : null);
+        return () => setActiveChatPartner(null);
+    }, [selectedConversation]);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [loading, setLoading] = useState(false);
@@ -324,6 +333,7 @@ const TutorMessagingView = ({
             setConversations([]);
         } finally {
             setLoading(false);
+            setConversationsLoaded(true);
         }
     };
 
@@ -336,14 +346,14 @@ const TutorMessagingView = ({
     }, [openConversationId, conversations, selectedConversation]);
 
     useEffect(() => {
-        if (autoJoinMeetingId && autoJoinUrl && conversations.length > 0 && !selectedConversation) {
+        if (autoJoinMeetingId && conversations.length > 0 && !selectedConversation) {
             let conv = callerStudentId
                 ? conversations.find(c => String(c.studentId || c.partnerId) === String(callerStudentId))
                 : null;
             if (!conv && conversations.length > 0) conv = conversations[0];
             if (conv) openConversation(conv);
         }
-    }, [autoJoinMeetingId, autoJoinUrl, conversations, selectedConversation, callerStudentId]);
+    }, [autoJoinMeetingId, conversations, selectedConversation, callerStudentId]);
 
     const openConversation = async conv => {
         setSelectedConversation(conv);
@@ -476,15 +486,18 @@ const TutorMessagingView = ({
     if (!selectedConversation) {
         return (
             <SafeAreaView style={styles.container}>
-                {/* ADD THIS */}
+                {/* Only joins from the list when there's no conversation to open.
+                    Otherwise the chat opens automatically and the header's VoiceCall
+                    joins instead — joining here too meant this instance was unmounted
+                    mid-join when the chat opened, which cancelled the call. */}
                 {appSocket && (
                     <VoiceCall
                         externalSocket={appSocket}
                         currentUserId={currentTutorUserId}
                         selectedTutor={selectedTutorForCall ?? { user_id: callerStudentId ?? null, name: 'Student' }}
                         currentUserName={tutorName}
-                        autoJoinMeetingId={autoJoinMeetingId}
-                        autoJoinUrl={autoJoinUrl}
+                        autoJoinMeetingId={conversationsLoaded && conversations.length === 0 ? autoJoinMeetingId : null}
+                        autoJoinUrl={conversationsLoaded && conversations.length === 0 ? autoJoinUrl : null}
                         onCallEnded={onCallEnded}
                         authToken={authToken}
                     />
@@ -572,18 +585,28 @@ const TutorMessagingView = ({
                 {/* ── Header ── */}
                 <View style={styles.chatHeader}>
                     <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
-                        <Icon name="arrow-left" size={22} color="#fff" />
+                        <Icon name="arrow-left" size={22} color={C.text} />
                     </TouchableOpacity>
 
-                    <View style={styles.chatAvatar}>
-                        <Icon name="user" size={18} color="#fff" />
-                        {isOnline && <View style={styles.onlineDotChat} />}
-                    </View>
+                    {/* Tap the student to see their survey answers */}
+                    <TouchableOpacity
+                        style={styles.chatHeaderStudent}
+                        onPress={() => setShowStudentProfile(true)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`View ${studentDisplayName}'s profile`}
+                    >
+                        <View style={styles.chatAvatar}>
+                            <Icon name="user" size={18} color={C.primary} />
+                            {isOnline && <View style={styles.onlineDotChat} />}
+                        </View>
 
-                    <View style={styles.chatHeaderInfo}>
-                        <Text style={styles.chatHeaderName} numberOfLines={1}>{studentDisplayName}</Text>
-                        <Text style={styles.chatHeaderStatus}>{isOnline ? '● Online' : 'Offline'}</Text>
-                    </View>
+                        <View style={styles.chatHeaderInfo}>
+                            <Text style={styles.chatHeaderName} numberOfLines={1}>{studentDisplayName}</Text>
+                            <Text style={styles.chatHeaderStatus} numberOfLines={1}>
+                                {isOnline ? '● Online' : 'Offline'}<Text style={styles.viewProfileHint}>  ·  Tap to view profile</Text>
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
 
                     {/* Countdown badge */}
                     {sessionData && (
@@ -608,9 +631,17 @@ const TutorMessagingView = ({
                             autoJoinMeetingId={autoJoinMeetingId}
                             autoJoinUrl={autoJoinUrl}
                             onCallEnded={onCallEnded}
+                            authToken={authToken}
                         />
                     )}
                 </View>
+
+                <StudentProfileViewer
+                    visible={showStudentProfile}
+                    studentId={studentId}
+                    studentName={studentDisplayName}
+                    onClose={() => setShowStudentProfile(false)}
+                />
 
                 {/* ── Session-expired tutor banner ── */}
                 {sessionExpired && (
@@ -739,38 +770,21 @@ const TutorMessagingView = ({
 
 // ─── styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-    container: { flex: 1, width: '100%', maxWidth: 820, alignSelf: 'center', backgroundColor: '#F6F8FC' },
+    container: { flex: 1, width: '100%', maxWidth: 820, alignSelf: 'center', backgroundColor: C.bg },
     flex: { flex: 1 },
     loadingCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
-    listHeader: {
-        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 16, paddingVertical: 12,
-        backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F3F5FA',
-    },
-    listTitle: { fontSize: 18, fontWeight: '700', color: '#111827' },
-    tutorNameLabel: { fontSize: 12, color: '#6B7280', marginTop: 2 },
+    listHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: C.tile },
+    listTitle: { fontSize: 18, fontWeight: '700', color: C.text },
+    tutorNameLabel: { fontSize: 12, color: C.textMuted, marginTop: 2 },
     statusDot: { width: 10, height: 10, borderRadius: 99 },
 
-    searchBar: {
-        flexDirection: 'row', alignItems: 'center', gap: 8,
-        marginHorizontal: 12, marginVertical: 10,
-        backgroundColor: '#F3F5FA', borderRadius: 12,
-        paddingHorizontal: 12, paddingVertical: 8,
-    },
-    searchInput: { flex: 1, fontSize: 14, color: '#111827' },
+    searchBar: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 12, marginVertical: 10, backgroundColor: C.tile, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 },
+    searchInput: { flex: 1, fontSize: 14, color: C.text, fontFamily: font },
 
     convList: { paddingHorizontal: 0, paddingBottom: 20 },
-    convRow: {
-        flexDirection: 'row', alignItems: 'center', gap: 10,
-        paddingHorizontal: 14, paddingVertical: 12,
-        backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#F6F8FC',
-    },
-    convAvatar: {
-        width: 42, height: 42, borderRadius: 21,
-        backgroundColor: '#E8EEFD', alignItems: 'center', justifyContent: 'center',
-        position: 'relative', flexShrink: 0,
-    },
+    convRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12, backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: C.bg },
+    convAvatar: { width: 42, height: 42, borderRadius: 21, backgroundColor: C.primarySoft, alignItems: 'center', justifyContent: 'center', position: 'relative', flexShrink: 0 },
     onlineDot: {
         position: 'absolute', bottom: 0, right: 0,
         width: 12, height: 12, borderRadius: 6,
@@ -778,45 +792,36 @@ const styles = StyleSheet.create({
     },
     convInfo: { flex: 1, minWidth: 0 },
     convInfoTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
-    convName: { fontWeight: '600', fontSize: 14, color: '#111827', flexShrink: 1 },
-    convTime: { fontSize: 11, color: '#9CA3AF', flexShrink: 0, marginLeft: 6 },
-    convLastMsg: { fontSize: 12, color: '#6B7280', marginTop: 2 },
-    unreadBadge: {
-        backgroundColor: '#2F5BEA', width: 20, height: 20, borderRadius: 10,
-        alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-    },
+    convName: { fontWeight: '600', fontSize: 14, color: C.text, flexShrink: 1 },
+    convTime: { fontSize: 11, color: C.textSubtle, flexShrink: 0, marginLeft: 6 },
+    convLastMsg: { fontSize: 12, color: C.textMuted, marginTop: 2 },
+    unreadBadge: { backgroundColor: C.primary, width: 20, height: 20, borderRadius: 10, alignItems: 'center', justifyContent: 'center', flexShrink: 0 },
     unreadText: { color: '#fff', fontSize: 11, fontWeight: '700' },
 
     emptyState: { alignItems: 'center', paddingVertical: 60 },
-    emptyText: { color: '#9CA3AF', fontSize: 14, marginTop: 10 },
-    emptySubtext: { color: '#D5DCEA', fontSize: 12, marginTop: 4, textAlign: 'center', paddingHorizontal: 30 },
+    emptyText: { color: C.textSubtle, fontSize: 14, marginTop: 10 },
+    emptySubtext: { color: C.borderStrong, fontSize: 12, marginTop: 4, textAlign: 'center', paddingHorizontal: 30 },
 
-    chatHeader: {
-        flexDirection: 'row', alignItems: 'center', gap: 8,
-        paddingHorizontal: 12, paddingVertical: 10,
-        backgroundColor: '#2F5BEA',
-    },
+    chatHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#FFFFFF', borderBottomWidth: 1, borderBottomColor: C.border },
     backBtn: { padding: 4, flexShrink: 0 },
     chatAvatar: {
         width: 36, height: 36, borderRadius: 18,
-        backgroundColor: 'rgba(255,255,255,0.2)',
+        backgroundColor: C.primarySoft,
         alignItems: 'center', justifyContent: 'center',
         position: 'relative', flexShrink: 0,
     },
-    onlineDotChat: {
-        position: 'absolute', bottom: 0, right: 0,
-        width: 10, height: 10, borderRadius: 5,
-        backgroundColor: '#4ADE80', borderWidth: 2, borderColor: '#2F5BEA',
-    },
+    onlineDotChat: { position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: 5, backgroundColor: '#4ADE80', borderWidth: 2, borderColor: C.primary },
+    chatHeaderStudent: { flex: 1, minWidth: 0, flexDirection: 'row', alignItems: 'center', gap: 8 },
     chatHeaderInfo: { flex: 1, minWidth: 0 },
-    chatHeaderName: { color: '#fff', fontWeight: '600', fontSize: 15 },
-    chatHeaderStatus: { color: '#BFD0FA', fontSize: 11, marginTop: 1 },
+    viewProfileHint: { color: C.primary, fontSize: 11 },
+    chatHeaderName: { color: C.text, fontWeight: '600', fontSize: 15 },
+    chatHeaderStatus: { color: C.textMuted, fontSize: 11, marginTop: 1 },
 
     countdownBadge: {
         flexDirection: 'row', alignItems: 'center', gap: 4,
         borderWidth: 1.5, borderRadius: 20,
         paddingHorizontal: 8, paddingVertical: 3,
-        backgroundColor: 'rgba(0,0,0,0.25)',
+        backgroundColor: C.tile,
     },
     countdownText: { fontSize: 12, fontWeight: '700', fontVariant: ['tabular-nums'] },
 
@@ -830,12 +835,7 @@ const styles = StyleSheet.create({
     expiredBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 },
     expiredBannerTitle: { fontSize: 13, fontWeight: '700', color: '#92400e' },
     expiredBannerSub: { fontSize: 11, color: '#b45309', marginTop: 1 },
-    reopenBtn: {
-        flexDirection: 'row', alignItems: 'center', gap: 5,
-        backgroundColor: '#2F5BEA', borderRadius: 12,
-        paddingHorizontal: 14, paddingVertical: 8,
-        marginLeft: 10, flexShrink: 0,
-    },
+    reopenBtn: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: C.primary, borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 8, marginLeft: 10, flexShrink: 0 },
     reopenBtnLoading: { opacity: 0.7 },
     reopenBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
 
@@ -853,37 +853,27 @@ const styles = StyleSheet.create({
     rowLeft: { alignItems: 'flex-start' },
     rowRight: { alignItems: 'flex-end' },
     bubble: { maxWidth: '78%', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 18 },
-    ownBubble: { backgroundColor: '#2F5BEA', borderBottomRightRadius: 4 },
-    theirBubble: { backgroundColor: '#fff', borderBottomLeftRadius: 4, borderWidth: 1, borderColor: '#E6EAF2' },
+    ownBubble: { backgroundColor: C.primary, borderBottomRightRadius: 4 },
+    theirBubble: { backgroundColor: '#fff', borderBottomLeftRadius: 4, borderWidth: 1, borderColor: C.border },
     bubbleText: { fontSize: 14, lineHeight: 19 },
     ownText: { color: '#fff' },
-    theirText: { color: '#111827' },
+    theirText: { color: C.text },
     bubbleMeta: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4, marginTop: 3 },
     bubbleTime: { fontSize: 11 },
     ownMeta: { color: 'rgba(255,255,255,0.7)' },
-    theirMeta: { color: '#9CA3AF' },
+    theirMeta: { color: C.textSubtle },
     imageAttach: { width: 180, height: 140, borderRadius: 10, marginBottom: 4 },
     typingBubble: { paddingVertical: 10, paddingHorizontal: 14 },
-    typingDots: { color: '#6B7280', fontSize: 16, letterSpacing: 3 },
+    typingDots: { color: C.textMuted, fontSize: 16, letterSpacing: 3 },
 
-    inputBar: {
-        backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#E6EAF2',
-        paddingHorizontal: 12, paddingVertical: 8,
-    },
-    attachPreview: {
-        flexDirection: 'row', alignItems: 'center', gap: 6,
-        backgroundColor: '#F3F5FA', borderRadius: 12,
-        paddingHorizontal: 10, paddingVertical: 6, marginBottom: 6,
-    },
+    inputBar: { backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: C.border, paddingHorizontal: 12, paddingVertical: 8 },
+    attachPreview: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: C.tile, borderRadius: 12, paddingHorizontal: 10, paddingVertical: 6, marginBottom: 6 },
     attachName: { flex: 1, fontSize: 12, color: '#374151' },
     inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 6 },
     inputIconBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
     recordingActive: { backgroundColor: '#EF4444' },
-    textInput: {
-        flex: 1, borderWidth: 1, borderColor: '#D5DCEA', borderRadius: 20,
-        paddingHorizontal: 14, paddingVertical: 8, fontSize: 14, color: '#111827', maxHeight: 100,
-    },
-    sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#2F5BEA', alignItems: 'center', justifyContent: 'center' },
+    textInput: { flex: 1, borderWidth: 1, borderColor: C.border, borderRadius: radius.md, paddingHorizontal: 14, paddingVertical: 8, fontSize: 14, color: C.text, maxHeight: 100, fontFamily: font },
+    sendBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: C.primary, alignItems: 'center', justifyContent: 'center' },
     sendBtnDisabled: { opacity: 0.4 },
 });
 

@@ -13,13 +13,14 @@ import {
     Modal,
     SafeAreaView,
     StyleSheet,
-    Text,
     TouchableOpacity,
     View,
 } from 'react-native';
+import { Text, colors as C, font, radius, shadow } from '../theme';
+import { setInCall } from '../firebaseConfig';
 
 const AGORA_APP_ID = '56b7bde5aa344709a6727b7a343ad954';
-const API_BASE_URL = 'https://hult-663884308553.europe-west9.run.app';
+import { API_URL as API_BASE_URL } from '../utils/config';
 
 const fmt = (secs) => {
     const m = Math.floor(secs / 60).toString().padStart(2, '0');
@@ -37,6 +38,8 @@ const VoiceCall = ({
     authToken = null,
 }) => {
     const [isCallOpen, setIsCallOpen] = useState(false);
+    // Let the app know a call screen is open (keeps the socket up in the background)
+    useEffect(() => { setInCall(isCallOpen); }, [isCallOpen]);
     const [callStatus, setCallStatus] = useState('idle');
     const [callDuration, setCallDuration] = useState(0);
     const [isMuted, setIsMuted] = useState(false);
@@ -75,16 +78,34 @@ const VoiceCall = ({
     // ── Init Agora client ─────────────────────────────────────────────────
     useEffect(() => {
         isMountedRef.current = true;
+        // Set when this effect is cleaned up. In development React runs effects
+        // twice (mount → cleanup → mount); without this flag the first, already
+        // cleaned-up run still created a client, grabbed the queued auto-join
+        // and joined on a client that was then replaced — so the call sat on
+        // "Calling…" forever.
+        let cancelled = false;
 
         (async () => {
             try {
                 const AgoraRTC = await loadAgora();
-                if (!AgoraRTC) return;
+                if (!AgoraRTC || cancelled) return;
 
                 AgoraRTC.setLogLevel(4); // suppress verbose logs
 
                 const client = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp8' });
                 clientRef.current = client;
+
+                // The other person is in the channel — show the call as connected
+                // even before their audio arrives (it may take a moment, or their
+                // mic may be blocked).
+                client.on('user-joined', (user) => {
+                    console.log('[Agora Web] Remote user joined:', user.uid);
+                    if (isMountedRef.current && clientRef.current === client) {
+                        setRemoteJoined(true);
+                        setCallStatus('connected');
+                        setCallError(null);
+                    }
+                });
 
                 client.on('user-published', async (user, mediaType) => {
                     await client.subscribe(user, mediaType);
@@ -141,6 +162,7 @@ const VoiceCall = ({
         })();
 
         return () => {
+            cancelled = true;
             isMountedRef.current = false;
             cleanupAgora();
             clearInterval(timerRef.current);
@@ -332,10 +354,35 @@ const VoiceCall = ({
         const numericUid = toAgoraUid(currentUserId); // ← convert here
         const token = await fetchAgoraToken(channelName, numericUid);
 
-        await clientRef.current.join(AGORA_APP_ID, channelName, token, numericUid); // ← numeric
-        const audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        // If the call screen closed or re-mounted while the token was loading,
+        // the client is gone — stop quietly instead of crashing.
+        const client = clientRef.current;
+        if (!client || !isMountedRef.current) {
+            console.warn('[Agora] Client released before join finished — skipping join for', channelName);
+            return;
+        }
+
+        await client.join(AGORA_APP_ID, channelName, token, numericUid); // ← numeric
+        console.log('[Agora Web] Joined channel', channelName, 'as uid', numericUid);
+
+        let audioTrack;
+        try {
+            audioTrack = await AgoraRTC.createMicrophoneAudioTrack();
+        } catch (micErr) {
+            // Still in the call (you can hear them), but they can't hear you.
+            console.error('[Agora Web] Microphone unavailable:', micErr);
+            if (isMountedRef.current) {
+                setCallError('Microphone blocked or not found. Allow microphone access in the browser to be heard.');
+            }
+            return;
+        }
+        if (!isMountedRef.current || clientRef.current !== client) {
+            audioTrack.close();
+            return;
+        }
         localTrackRef.current = audioTrack;
-        await clientRef.current.publish([audioTrack]);
+        await client.publish([audioTrack]);
+        console.log('[Agora Web] Microphone published');
     };
 
     // ── Start call (caller side) ──────────────────────────────────────────
@@ -541,11 +588,7 @@ const VoiceCall = ({
 };
 
 const styles = StyleSheet.create({
-    headerCallBtn: {
-        width: 34, height: 34, borderRadius: 17,
-        backgroundColor: '#059669',
-        alignItems: 'center', justifyContent: 'center',
-    },
+    headerCallBtn: { width: 34, height: 34, borderRadius: 17, backgroundColor: C.successText, alignItems: 'center', justifyContent: 'center' },
     disabledBtn: { opacity: 0.4 },
     screen: {
         flex: 1,
@@ -560,27 +603,17 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,255,255,0.07)',
         paddingHorizontal: 16, paddingVertical: 7, borderRadius: 99,
     },
-    statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#6b7280' },
+    statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: C.textMuted },
     statusDotActive: { backgroundColor: '#4ade80' },
-    statusText: { color: '#D5DCEA', fontSize: 13, letterSpacing: 0.2 },
+    statusText: { color: C.borderStrong, fontSize: 13, letterSpacing: 0.2 },
     avatarSection: {
         width: 180, height: 180,
         alignItems: 'center', justifyContent: 'center',
         marginVertical: 8,
     },
-    pulseRing: {
-        position: 'absolute',
-        width: 140, height: 140, borderRadius: 70,
-        backgroundColor: '#2F5BEA',
-    },
+    pulseRing: { position: 'absolute', width: 140, height: 140, borderRadius: 70, backgroundColor: C.primary },
     pulseRingOuter: { width: 170, height: 170, borderRadius: 85 },
-    avatarCircle: {
-        width: 110, height: 110, borderRadius: 55,
-        backgroundColor: '#1E45C8',
-        alignItems: 'center', justifyContent: 'center',
-        shadowColor: '#2F5BEA', shadowOpacity: 0.7,
-        shadowRadius: 28, elevation: 14,
-    },
+    avatarCircle: { width: 110, height: 110, borderRadius: 55, backgroundColor: C.primaryDark, alignItems: 'center', justifyContent: 'center', shadowColor: C.primary, shadowOpacity: 0.7, shadowRadius: 28, elevation: 14 },
     calleeName: {
         fontSize: 26, fontWeight: '700', color: '#f1f5f9',
         textAlign: 'center', maxWidth: '80%',
@@ -607,14 +640,8 @@ const styles = StyleSheet.create({
         alignItems: 'center', justifyContent: 'center', gap: 4,
     },
     controlBtnActive: { backgroundColor: 'rgba(109,40,217,0.45)' },
-    controlLabel: { color: '#9ca3af', fontSize: 11, marginTop: 2 },
-    endBtn: {
-        width: 68, height: 68, borderRadius: 34,
-        backgroundColor: '#dc2626',
-        alignItems: 'center', justifyContent: 'center',
-        shadowColor: '#dc2626', shadowOpacity: 0.55,
-        shadowRadius: 14, elevation: 10,
-    },
+    controlLabel: { color: C.textSubtle, fontSize: 11, marginTop: 2 },
+    endBtn: { width: 68, height: 68, borderRadius: 34, backgroundColor: C.danger, alignItems: 'center', justifyContent: 'center', shadowColor: C.danger, shadowOpacity: 0.55, shadowRadius: 14, elevation: 10 },
 });
 
 export default VoiceCall;
